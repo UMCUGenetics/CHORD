@@ -4,7 +4,7 @@
 \name{CHORD}
 \alias{CHORD}
 \title{CHORD (Classifier for Homologous Recombination Deficiency)}
-\format{An object of class \code{randomForest} of length 19.}
+\format{An object of class \code{randomForest} of length 18.}
 \usage{
 data(CHORD)
 }
@@ -12,6 +12,6 @@ data(CHORD)
 A random forest predictor of homologous recombination deficiency
 }
 \details{
-Version 17: 17_HMF_pkgMutSigs_germLt3-somEq0-lohEq0_delmhOnly_noNegCorFeat_greylistIncl_brca1Scale1point5x_noneScale0point33x_multiclass_featSel
+Version 38: 38_HMF_pkgMutSigs_germLt3-somEq0-lohEq0_greylistIncl_multiclass_snvContext_svContext_allSigsRel_scaleGridSearch_featPreFilt_boruta_newAnn
 }
 \keyword{datasets}
