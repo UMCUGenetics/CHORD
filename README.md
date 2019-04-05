@@ -3,7 +3,7 @@
 CHORD is a random forest model that uses various mutational signatures to predict homologous
 recombination deficiency (HRD). Per sample, the required inputs for prediction are two vcf files,
 one containing SNVs and indels, and one containing SVs. Ideally, these vcfs will have been produced
-using the HMF variant calling pipeline v4.8 (https://github.com/hartwigmedical/pipeline), which uses
+using the HMF variant calling pipeline v4.4 (https://github.com/hartwigmedical/pipeline), which uses
 Strelka for somatic SNV/indel calling, and Manta + BPI (Breakpoint Inspector; custom code for SV
 post-processing).
 
