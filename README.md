@@ -5,7 +5,7 @@ recombination deficiency (HRD). Per sample, the required inputs for prediction a
 one containing SNVs and indels, and one containing SVs. Ideally, these vcfs will have been produced
 using the HMF variant calling pipeline v4.4 (https://github.com/hartwigmedical/pipeline), which uses
 Strelka for somatic SNV/indel calling, and Manta + BPI (Breakpoint Inspector; custom code for SV
-post-processing).
+post-processing) for SV calling.
 
 The primary feature used by CHORD is deletions with flanking microhomology. Also used structural 
 duplications (1,000-10,000bp & 10,000-100,000bp in length). Structural duplications are used to 
