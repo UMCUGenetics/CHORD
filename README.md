@@ -1,4 +1,4 @@
-# CHORD (Classifier for Homologous Recombination Deficiency)
+# CHORD: Classifier of Homologous Recombination Deficiency
 
 CHORD is a random forest model that uses various mutational signatures to predict homologous
 recombination deficiency (HRD). Per sample, the required inputs for prediction are two vcf files,
@@ -9,7 +9,8 @@ post-processing).
 
 The primary feature used by CHORD is deletions with flanking microhomology. Also used structural 
 duplications (1,000-10,000bp & 10,000-100,000bp in length). Structural duplications are used to 
-distinguish BRCA1(-like) from BRCA2 HRD.
+distinguish BRCA1(-like) from BRCA2(-like) HRD. More info about CHORD (training, performance, etc...) 
+can be found in info/chord_training_and_perf.pptx.
 
 The CHORD package is dependent on the R packages mutSigExtractor and randomForest, so be sure to
 have these installed. The below code can be used to install these dependencies locally.
