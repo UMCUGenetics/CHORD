@@ -1,31 +1,45 @@
 # CHORD (Classifier for Homologous Recombination Deficiency)
 
-CHORD is a random forest model that was trained on mutational signatures to predict homologous
-recombination deficiency (HRD). The main features used by the model are deletions with flanking
-mirochomology, and the SV signatures 1,3 and 5 (described here: 
-https://media.nature.com/original/nature-assets/nature/journal/v534/n7605/extref/nature17676-s3.zip, 
-in Supplementary.Table.21.Signatures.v3.xlsx)
+CHORD is a random forest model that uses various mutational signatures to predict homologous
+recombination deficiency (HRD). Per sample, the required inputs for prediction are two vcf files,
+one containing SNVs and indels, and one containing SVs. Ideally, these vcfs will have been produced
+using the HMF variant calling pipeline v4.8 (https://github.com/hartwigmedical/pipeline), which uses
+Strelka for somatic SNV/indel calling, and Manta + BPI (Breakpoint Inspector; custom code for SV
+post-processing).
+
+The primary feature used by CHORD is deletions with flanking microhomology. Also used structural 
+duplications (1,000-10,000bp & 10,000-100,000bp in length). Structural duplications are used to 
+distinguish BRCA1(-like) from BRCA2 HRD.
 
 The CHORD package is dependent on the R packages mutSigExtractor and randomForest, so be sure to
-have these installed.
+have these installed. The below code can be used to install these dependencies locally.
+```
+install.packages("randomForest")
 
-Predicting HRD is performed in 2 steps. First, signatures are extracted from vcf (or compressed vcf.gz) 
-files. Note that with many samples/large vcfs, it might be a good idea to run this step on an HPC.
+## Use devtools to install mutSigExtractor directly from github
+install.packages("devtools"); library(devtools)
+install_github('https://github.com/luannnguyen/mutSigExtractor')
+```
+
+Predicting HRD is performed in 2 steps. First, signatures are extracted from vcf (or compressed 
+vcf.gz) files. Note that with many samples/large vcfs, it might be a good idea to run this step on 
+an HPC.
 ```
 ## extractSigsChord() will extract signatures for one sample. This will return a one row dataframe.
 sigs <- extractSigsChord(
    vcf.snv = '/path/to/vcf_with_snvs',
    vcf.indel = '/path/to/vcf_with_indels',
    vcf.sv = '/path/to/vcf_with_svs',
-   sample.name = 'can_be_anything'
+   sample.name = 'can_be_anything',
+   output.path = NULL ## If this is not NULL, the output dataframe will be written to this path
 )
 ```
 
 Then, the signature values are run through the model to make the prediction.
 ```
-## With multiple samples, the one row dataframes outputted by extractSigsChord() can be merged into one 
-## dataframe. For example:
-df_list <- list(output_df1, output_df2, output_df3) ## in reality this list will probably be generated from an lapply loop
+## With multiple samples, the one row dataframes outputted by extractSigsChord() can be merged into 
+## one dataframe. For example:
+df_list <- list(df1, df2, df3) ## In reality this list will probably be generated from an lapply loop
 sigs <- do.call(rbind, df_list)
 
 ## Prediction
