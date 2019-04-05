@@ -4,17 +4,34 @@
 \alias{chordPredict}
 \title{Predict the probability of homogolous recombination deficiency using mutational signatures}
 \usage{
-chordPredict(newdata, raw.output = F)
+chordPredict(sigs, rf.model = CHORD, hrd.cutoff = 0.5, show.sigs = F)
 }
 \arguments{
-\item{newdata}{A data frame or matrix containing new data}
+\item{sigs}{The output of extractSigsChord(), which is a dataframe containing the SNV, indel and
+SV context counts.}
 
-\item{raw.output}{If TRUE, the probabilities of 'BRCA1', 'BRCA2' and 'none' (no predicted
-mutation) will also be returned}
+\item{rf.model}{The random forest model. Defaults to CHORD.}
+
+\item{hrd.cutoff}{Samples greater or equal to this cutoff will be marked as HRD in the output
+table of chordPredict(). Default is 0.5.}
+
+\item{show.sigs}{Show the signature matrix in the output table?}
 }
 \value{
-A dataframe containing the prediction probabilities
+A dataframe containing per sample the probabilities of BRCA1/2 deficiency and HRD, as
+well as the input signature values if show.sigs==T
 }
 \description{
 A wrapper for predict.randomForest() from the randomForest package
+}
+\examples{
+## Extract signatures
+vcf_dir <- '/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/HMF_data/DR010-update/data/171112_HMFregCPCT_FR15413005_FR14000014_CPCT02120057/'
+vcf_snv <- paste0(vcf_dir,'CPCT02120057R_CPCT02120057T_post_processed_v2.2.vcf.gz')
+vcf_indel <- paste0(vcf_dir,'CPCT02120057R_CPCT02120057T_post_processed_v2.2.vcf.gz')
+vcf_sv <- paste0(vcf_dir,'CPCT02120057R_CPCT02120057T_somaticSV_bpi.vcf.gz')
+sigs <- extractSigsChord(vcf_snv, vcf_indel, vcf_sv, sample.name='patient1')
+
+## Predict HRD probability with CHORD
+chordPredict(sigs)
 }
