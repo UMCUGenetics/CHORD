@@ -7,10 +7,10 @@ using the HMF variant calling pipeline v4.4 (https://github.com/hartwigmedical/p
 Strelka for somatic SNV/indel calling, and Manta + BPI (Breakpoint Inspector; custom code for SV
 post-processing) for SV calling.
 
-The primary feature used by CHORD is deletions with flanking microhomology. Also used structural 
-duplications (1,000-10,000bp & 10,000-100,000bp in length). Structural duplications are used to 
-distinguish BRCA1(-like) from BRCA2(-like) HRD. More info about CHORD (training, performance, etc...) 
-can be found in info/chord_training_and_perf.pdf.
+The primary feature used by CHORD is deletions with flanking microhomology as well as structural 
+duplications (1,000-10,000bp & 10,000-100,000bp in length). Additionally, structural duplications are 
+used to distinguish BRCA1(-like) from BRCA2(-like) HRD. More info about CHORD (training, performance, 
+etc...) can be found in info/chord_training_and_perf.pdf.
 
 The CHORD package is dependent on the R packages mutSigExtractor and randomForest, so be sure to
 have these installed. The below code can be used to install these dependencies locally.
