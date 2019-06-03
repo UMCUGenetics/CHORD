@@ -19,25 +19,25 @@
 #'
 extractSigsChord <- function(
   vcf.snv, vcf.indel, vcf.sv, sample.name='sample', 
-  sv.caller='manta', output.path=NULL, verbose=T
+  sv.caller='gridss', output.path=NULL, verbose=T
 ){
-  # vcf_dir= '/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/HMF_data/DR010-update/data/171112_HMFregCPCT_FR15413005_FR14000014_CPCT02120057/'
-  # vcf.snv = paste0(vcf_dir,'CPCT02120057R_CPCT02120057T_post_processed_v2.2.vcf.gz')
-  # vcf.indel = paste0(vcf_dir,'CPCT02120057R_CPCT02120057T_post_processed_v2.2.vcf.gz')
-  # vcf.sv = paste0(vcf_dir,'CPCT02120057R_CPCT02120057T_somaticSV_bpi.vcf.gz')
+  # vcf_dir='/Users/lnguyen//hpc/cog_bioinf/cuppen/project_data/HMF_data/DR010-DR047/data/160721_HMFregCPCT_FR12244686_FR12244455_CPCT02010359/'
+  # vcf.snv=paste0(vcf_dir,'CPCT02010359R_CPCT02010359T_post_processed.vcf.gz')
+  # vcf.indel=paste0(vcf_dir,'CPCT02010359R_CPCT02010359T_post_processed.vcf.gz')
+  # vcf.sv=paste0(vcf_dir,'CPCT02010359T.purple.sv.ann.vcf.gz')
   
   sigs <- list()
   
   if(verbose){ message('Counting SNV trinucleotide contexts...') }
-  sigs$snv <- extractSigsSnv(vcf.snv, vcf.filter='PASS', output='contexts')
+  sigs$snv <- extractSigsSnv(vcf.snv, vcf.filter='PASS', output='contexts', verbose=verbose)
   
   if(verbose){ message('Counting indel contexts (types x lengths)...') }
-  sigs$indel <- extractSigsIndel(vcf.indel, vcf.filter='PASS')
+  sigs$indel <- extractSigsIndel(vcf.indel, vcf.filter='PASS', verbose=verbose)
   
   if(verbose){ message('Counting SV contexts (types x lengths)...') }
   sigs$sv <- extractSigsSv(
     vcf.sv, vcf.filter='PASS', sv.caller=sv.caller, output='contexts',
-    sv.len.cutoffs = c(0, 10^3, 10^4, 10^5, 10^6, 10^7,Inf)
+    sv.len.cutoffs = c(0, 10^3, 10^4, 10^5, 10^6, 10^7,Inf, verbose=verbose)
   )
   
   out <- do.call(cbind,lapply(sigs,t))
