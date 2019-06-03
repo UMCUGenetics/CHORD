@@ -29,13 +29,13 @@ extractSigsChord <- function(
   sigs <- list()
   
   if(verbose){ message('Counting SNV trinucleotide contexts...') }
-  sigs$snv <- extractSigsSnv(vcf.snv, vcf.filter='PASS', output='contexts', verbose=verbose)
+  sigs$snv <- mutSigExtractor::extractSigsSnv(vcf.snv, vcf.filter='PASS', output='contexts', verbose=verbose)
   
   if(verbose){ message('Counting indel contexts (types x lengths)...') }
-  sigs$indel <- extractSigsIndel(vcf.indel, vcf.filter='PASS', verbose=verbose)
+  sigs$indel <- mutSigExtractor::extractSigsIndel(vcf.indel, vcf.filter='PASS', verbose=verbose)
   
   if(verbose){ message('Counting SV contexts (types x lengths)...') }
-  sigs$sv <- extractSigsSv(
+  sigs$sv <- mutSigExtractor::extractSigsSv(
     vcf.sv, vcf.filter='PASS', sv.caller=sv.caller, output='contexts',
     sv.len.cutoffs = c(0, 10^3, 10^4, 10^5, 10^6, 10^7,Inf, verbose=verbose)
   )
