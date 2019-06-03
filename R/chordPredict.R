@@ -27,8 +27,8 @@
 chordPredict <- function(sigs, rf.model=CHORD, hrd.cutoff=0.5, show.sigs=F){
   
   ## Converts the raw signature counts from extractSigsChord() to features used by CHORD
-  sigs_split <- splitDfRegex(sigs, c(snv='>',indel='[a-z]{3}[.]',sv='[A-Z]{3}'))
-  sigs_processed <- transformContexts(
+  sigs_split <- mutSigExtractor::splitDfRegex(sigs, c(snv='>',indel='[a-z]{3}[.]',sv='[A-Z]{3}'))
+  sigs_processed <- mutSigExtractor::transformContexts(
     sigs_split,
     
     ## Simplify indels to types only (mh: flanking microhomology, rep: within repeat regions, none: 
