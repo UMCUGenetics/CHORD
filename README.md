@@ -12,14 +12,15 @@ duplications (1,000-10,000bp & 10,000-100,000bp in length). Additionally, struct
 used to distinguish BRCA1(-like) from BRCA2(-like) HRD. More info about CHORD (training, performance, 
 etc...) can be found in info/chord_training_and_perf.pdf.
 
-The CHORD package is dependent on the R packages mutSigExtractor and randomForest, so be sure to
+The CHORD package is dependent on the R packages mutSigExtractor (stable version: 
+https://github.com/luannnguyen/mutSigExtractor/tree/1.00) and randomForest, so be sure to
 have these installed. The below code can be used to install these dependencies locally.
 ```
 install.packages("randomForest")
 
 ## Use devtools to install mutSigExtractor directly from github
 install.packages("devtools"); library(devtools)
-install_github('https://github.com/luannnguyen/mutSigExtractor')
+install_github('https://github.com/luannnguyen/mutSigExtractor/tree/1.00')
 ```
 
 Predicting HRD is performed in 2 steps. First, signatures are extracted from vcf (or compressed 
