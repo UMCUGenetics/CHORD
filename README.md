@@ -13,7 +13,7 @@ used to distinguish BRCA1(-like) from BRCA2(-like) HRD. More info about CHORD (t
 etc...) can be found in info/chord_training_and_perf.pdf.
 
 The CHORD package is dependent on the R packages mutSigExtractor (stable version: 
-https://github.com/luannnguyen/mutSigExtractor/tree/1.00) and randomForest, so be sure to
+https://github.com/luannnguyen/mutSigExtractor/tree/1.01) and randomForest, so be sure to
 have these installed. The below code can be used to install these dependencies locally.
 ```
 install.packages("randomForest")
