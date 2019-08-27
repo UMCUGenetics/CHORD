@@ -20,7 +20,7 @@ install.packages("randomForest")
 
 ## Use devtools to install mutSigExtractor directly from github
 install.packages("devtools"); library(devtools)
-install_github('https://github.com/luannnguyen/mutSigExtractor/tree/1.00')
+install_github('https://github.com/luannnguyen/mutSigExtractor/tree/1.01')
 ```
 
 Predicting HRD is performed in 2 steps. First, signatures are extracted from vcf (or compressed 
