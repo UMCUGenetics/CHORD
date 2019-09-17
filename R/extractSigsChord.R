@@ -5,7 +5,7 @@
 #' compatible input for CHORD
 #' 
 #' @param vcf.snv Path to the vcf file containing SNVs
-#' @param vcf.indel Path to the vcf file containing indels
+#' @param vcf.indel Path to the vcf file containing indels. By default vcf.indel==vcf.snv
 #' @param vcf.sv Path to the vcf file containing SVs
 #' @param sample.name The name of the sample as a character. Defaults to 'sample' if none is 
 #' provided.
@@ -18,36 +18,60 @@
 #' @export
 #'
 extractSigsChord <- function(
-  vcf.snv, vcf.indel, vcf.sv, sample.name='sample', 
+  vcf.snv, 
+  vcf.indel=vcf.snv, 
+  vcf.sv, 
+  sample.name='sample', 
   sv.caller='gridss', output.path=NULL, verbose=T
 ){
-  # vcf_dir='/Users/lnguyen//hpc/cog_bioinf/cuppen/project_data/HMF_data/DR010-DR047/data/160721_HMFregXXXXXXXX/'
-  # vcf.snv=paste0(vcf_dir,'XXXXXXXX.vcf.gz')
-  # vcf.indel=paste0(vcf_dir,'XXXXXXXX.vcf.gz')
-  # vcf.sv=paste0(vcf_dir,'XXXXXXXX.purple.sv.ann.vcf.gz')
   
+  
+  ######### Load vcfs #########
+  if(verbose){ message('\n#====== Loading variants from vcfs ======#') }
+  
+  variants <- list()
+  
+  if(verbose){ message('\n## SNVs') }
+  variants$snv <- variantsFromVcf(vcf.snv, mode='snv_indel', vcf.filter='PASS', verbose=verbose)
+  
+  if(verbose){ message('\n## Indels') }
+  if(vcf.indel==vcf.snv){
+    if(verbose){ message('vcf file is the same for both SNVs and indels. Skipping reading vcf for indels') }
+    variants$indel <- variants$snv
+  } else {
+    variants$indel <- variantsFromVcf(vcf.indel, mode='snv_indel', vcf.filter='PASS', verbose=verbose)
+  }
+  
+  if(verbose){ message('\n## SVs') }
+  variants$sv <- variantsFromVcf(vcf.sv, mode='sv', vcf.filter='PASS', sv.caller=sv.caller, verbose=verbose)
+  
+  
+  ######### Count contexts #########
+  if(verbose){ message('\n#====== Counting mutation contexts ======#') }
   sigs <- list()
   
-  if(verbose){ message('Counting SNV trinucleotide contexts...') }
-  sigs$snv <- mutSigExtractor::extractSigsSnv(vcf.snv, vcf.filter='PASS', output='contexts', verbose=verbose)
+  if(verbose){ message('\n## Single base substitutions') }
+  sigs$snv <- extractSigsSnv(bed=variants$snv, output='contexts', verbose=verbose)
   
-  if(verbose){ message('Counting indel contexts (types x lengths)...') }
-  sigs$indel <- mutSigExtractor::extractSigsIndel(vcf.indel, vcf.filter='PASS', verbose=verbose)
+  if(verbose){ message('\n## Indel contexts (types x lengths)') }
+  sigs$indel <- extractSigsIndel(bed=variants$indel, verbose=verbose)
   
-  if(verbose){ message('Counting SV contexts (types x lengths)...') }
-  sigs$sv <- mutSigExtractor::extractSigsSv(
-    vcf.sv, vcf.filter='PASS', sv.caller=sv.caller, output='contexts',
+  if(verbose){ message('\n## SV contexts (types x lengths)') }
+  sigs$sv <- extractSigsSv(
+    df=variants$sv, sv.caller=sv.caller, output='contexts',
     sv.len.cutoffs = c(0, 10^3, 10^4, 10^5, 10^6, 10^7,Inf, verbose=verbose)
   )
   
+  ######### Export #########
+  if(verbose){ message('\n#====== Exporting output =========#') }
   out <- do.call(cbind,lapply(sigs,t))
   rownames(out) <- sample.name
   
   if(is.null(output.path)){
+    if(verbose){ message('output.path not specified. Directly returning output') }
     return(out)
   } else {
+    if(verbose){ message('Writing tsv file') }
     write.table(out, output.path, sep='\t', quote=F)
   }
 }
-
-
