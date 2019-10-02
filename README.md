@@ -11,8 +11,8 @@ duplications (1,000-10,000bp & 10,000-100,000bp in length). Additionally, struct
 used to distinguish BRCA1(-like) from BRCA2(-like) HRD. More info about CHORD (training, performance, 
 etc...) can be found in info/chord_training_and_perf.pdf.
 
-The CHORD package is dependent on the R packages mutSigExtractor (stable version: 
-https://github.com/luannnguyen/mutSigExtractor/tree/1.01) and randomForest, so be sure to
+The CHORD package is dependent on the R packages mutSigExtractor (
+https://github.com/luannnguyen/mutSigExtractor/) and randomForest, so be sure to
 have these installed. The below code can be used to install these dependencies locally.
 ```
 install.packages("randomForest")
