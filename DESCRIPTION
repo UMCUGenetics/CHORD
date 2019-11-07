@@ -1,7 +1,7 @@
 Package: CHORD
 Type: Package
 Title: Classifier of Homologous Recombination Deficiency
-Version: v60.02
+Version: 60.02
 Author: Luan Nguyen
 Maintainer: The package maintainer <n.l.nguyen-2@umcutrecht.nl>
 Description: More about what it does (maybe more than one line)
