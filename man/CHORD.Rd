@@ -12,6 +12,6 @@ data(CHORD)
 A random forest predictor of homologous recombination deficiency
 }
 \details{
-Version 38: 38_HMF_pkgMutSigs_germLt3-somEq0-lohEq0_greylistIncl_multiclass_snvContext_svContext_allSigsRel_scaleGridSearch_featPreFilt_boruta_newAnn
+Version 60: 60_snvContext_svContext_allSigsRel_noSuppEvidence_customBlacklist3_noBoruta
 }
 \keyword{datasets}

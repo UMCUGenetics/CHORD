@@ -2,15 +2,16 @@
 % Please edit documentation in R/extractSigsChord.R
 \name{extractSigsChord}
 \alias{extractSigsChord}
-\title{Extract signatures in the format compatible with CHORD}
+\title{Extract mutation contexts in the format compatible with CHORD}
 \usage{
-extractSigsChord(vcf.snv, vcf.indel, vcf.sv, sample.name = "sample",
-  sv.caller = "manta", output.path = NULL, verbose = T)
+extractSigsChord(vcf.snv, vcf.indel = vcf.snv, vcf.sv,
+  sample.name = "sample", sv.caller = "gridss", output.path = NULL,
+  verbose = T)
 }
 \arguments{
 \item{vcf.snv}{Path to the vcf file containing SNVs}
 
-\item{vcf.indel}{Path to the vcf file containing indels}
+\item{vcf.indel}{Path to the vcf file containing indels. By default vcf.indel==vcf.snv}
 
 \item{vcf.sv}{Path to the vcf file containing SVs}
 
