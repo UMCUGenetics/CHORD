@@ -4,10 +4,11 @@
 \alias{chordPredict}
 \title{Predict the probability of homogolous recombination deficiency using mutational signatures}
 \usage{
-chordPredict(sigs, rf.model = CHORD, hrd.cutoff = 0.5, show.sigs = F)
+chordPredict(features, rf.model = CHORD, hrd.cutoff = 0.5,
+  show.features = F, verbose = T)
 }
 \arguments{
-\item{sigs}{The output of extractSigsChord(), which is a dataframe containing the SNV, indel and
+\item{features}{The output of extractSigsChord(), which is a dataframe containing the SNV, indel and
 SV context counts.}
 
 \item{rf.model}{The random forest model. Defaults to CHORD.}
@@ -15,23 +16,25 @@ SV context counts.}
 \item{hrd.cutoff}{Samples greater or equal to this cutoff will be marked as HRD in the output
 table of chordPredict(). Default is 0.5.}
 
-\item{show.sigs}{Show the signature matrix in the output table?}
+\item{show.features}{Show the mutation context matrix in the output table?}
+
+\item{verbose}{Show messages/warnings?}
 }
 \value{
-A dataframe containing per sample the probabilities of BRCA1/2 deficiency and HRD, as
-well as the input signature values if show.sigs==T
+A dataframe containing per sample the probabilities of BRCA1-type and BRCA2-type HRD, 
+and HRD (= BRCA1-type HRD + BRCA2-type HRD)
 }
 \description{
 A wrapper for predict.randomForest() from the randomForest package
 }
 \examples{
-## Extract signatures
-vcf_dir <- '/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/HMF_data/DR010-update/data/171112_HMFregCPCT_FR15413005_FR14000014_CPCT02120057/'
-vcf_snv <- paste0(vcf_dir,'CPCT02120057R_CPCT02120057T_post_processed_v2.2.vcf.gz')
-vcf_indel <- paste0(vcf_dir,'CPCT02120057R_CPCT02120057T_post_processed_v2.2.vcf.gz')
-vcf_sv <- paste0(vcf_dir,'CPCT02120057R_CPCT02120057T_somaticSV_bpi.vcf.gz')
-sigs <- extractSigsChord(vcf_snv, vcf_indel, vcf_sv, sample.name='patient1')
+## Extract mutation contexts
+vcf_dir <- '/path_to_vcfs/'
+vcf_snv <- paste0(vcf_dir,'SampleX_post_processed_v2.2.vcf.gz')
+vcf_indel <- paste0(vcf_dir,'SampleX_post_processed_v2.2.vcf.gz')
+vcf_sv <- paste0(vcf_dir,'SampleX_somaticSV_bpi.vcf.gz')
+contexts <- extractSigsChord(vcf_snv, vcf_indel, vcf_sv, sample.name='SampleX')
 
 ## Predict HRD probability with CHORD
-chordPredict(sigs)
+chordPredict(contexts)
 }
