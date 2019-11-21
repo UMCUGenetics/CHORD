@@ -1,4 +1,4 @@
-#' Extract signatures in the format compatible with CHORD
+#' Extract mutation contexts in the format compatible with CHORD
 #' 
 #' @description This function is a wrapper for the 3 functions from mutSigExtractor:
 #' extractSigsSnv(), extractSigsIndel(), extractSigsSv(). Some post-processing is done to produce
