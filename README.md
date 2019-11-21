@@ -10,9 +10,9 @@ The primary feature used by CHORD is deletions with flanking microhomology as we
 duplications (1-10kb and 10-100kb in length). Additionally, structural duplications are used to 
 distinguish BRCA1-type HRD from BRCA2-type HRD.
 
-The CHORD package is dependent on the R packages mutSigExtractor (
-https://github.com/luannnguyen/mutSigExtractor) and randomForest, so be sure to
-have these installed. The below code can be used to install these dependencies locally.
+The CHORD package is dependent on the R packages mutSigExtractor (https://github.com/luannnguyen/mutSigExtractor) 
+and randomForest, so be sure to have these installed. The below code can be used to install these 
+dependencies locally.
 ```
 install.packages("randomForest")
 
@@ -25,8 +25,9 @@ Predicting HRD is performed in 2 steps. First, the counts of specific mutation c
 vcf (or compressed vcf.gz) files. Note that with many samples/large vcfs, it might be a good idea to run 
 this step on an HPC.
 ```
-## extractSigsChord() will extract the mutation contexts for one sample. This will return a one row dataframe.
-contexts <- extractSigsChord(
+## extractSigsChord() will extract the mutation contexts for one sample. 
+## This will return a one row dataframe.
+contexts1 <- extractSigsChord(
    vcf.snv = '/path/to/vcf_with_snvs',
    vcf.indel = '/path/to/vcf_with_indels',
    vcf.sv = '/path/to/vcf_with_svs',
