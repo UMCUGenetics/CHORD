@@ -173,7 +173,7 @@ anything; as long as the columns are in the aforementioned order. See ```bed_snv
 what this dataframe should look like.
 
 We can use ```readVcfFields()``` to read a vcf into R as a dataframe. *Warning*: this may crash R 
-for very large vcfs! In these cases you may need to do some pre-process
+for very large vcfs! In these cases you may need to do some pre-processing of the vcfs.
 ```{r message=FALSE, warning=FALSE}
 bed_snv_indel <- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c('CHROM','POS','REF','ALT'))
 head(bed_snv_indel)
