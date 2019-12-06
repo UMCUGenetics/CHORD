@@ -1656,7 +1656,7 @@ pred</code></pre>
 <li>Not HRD: <code>p_none</code></li>
 </ul>
 <p>Note that <code>p_hrd</code> = <code>p_BRCA1</code> + <code>p_BRCA2</code>. Furthermore, <code>p_none</code> + <code>p_BRCA1</code> + <code>p_BRCA2</code> = 1.</p>
-<p><code>is_hrd</code> tells us if <code>p_hrd</code> <strong>&gt;= 0.5 (the HRD classification threshold)</strong>. If this is TRUE, <code>hrd_type</code> tells us if the sample has BRCA1-type HRD or BRCA2-type HRD.</p>
+<p><code>is_hrd</code> tells us if <code>p_hrd</code> <strong>&gt;= 0.5 (the HRD classification threshold)</strong>. If this is TRUE, then <code>hrd_type</code> will tell us if the sample has BRCA1-type HRD or BRCA2-type HRD (=max(<code>p_BRCA1</code>,<code>p_BRCA2</code>)).</p>
 </div>
 <div id="qc-checks" class="section level4">
 <h4>QC checks</h4>
