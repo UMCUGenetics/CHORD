@@ -1,48 +1,32 @@
 # CHORD: Classifier of Homologous Recombination Deficiency
 
-CHORD is a random forest model that uses various mutational signatures to predict homologous
-recombination deficiency (HRD). Per sample, the required inputs for prediction are two vcf files,
-one containing SNVs and indels, and one containing SVs. Ideally, these vcfs will have been produced
-using the HMF variant calling pipeline (https://github.com/hartwigmedical/pipeline/tree/v4.8), which uses
-Strelka for somatic SNV/indel calling, and GRIDSS for SV calling.
+## Description
+CHORD is a random forest model that uses the relative counts of somatic mutation contexts to predict
+homologous recombination deficiency (HRD). The primary contexts used by CHORD are deletions with
+flanking microhomology and 1-100kb structural duplications. Additionally, 1-100kb structural
+duplications are used to distinguish BRCA1-type HRD from BRCA2-type HRD.
 
-The primary feature used by CHORD is deletions with flanking microhomology as well as structural 
-duplications (1-10kb and 10-100kb in length). Additionally, structural duplications are used to 
-distinguish BRCA1-type HRD from BRCA2-type HRD.
-
-The CHORD package is dependent on the R packages mutSigExtractor (https://github.com/luannnguyen/mutSigExtractor) 
-and randomForest, so be sure to have these installed. The below code can be used to install these 
-dependencies locally.
+## Installation
+Use devtools to install CHORD and mutSigExtractor directly from github. mutSigExtractor is required
+for extracting the features that CHORD uses.
 ```
-install.packages("randomForest")
+install.packages("devtools")
+library(devtools)
 
-## Use devtools to install mutSigExtractor directly from github
-install.packages("devtools"); library(devtools)
 install_github('https://github.com/luannnguyen/mutSigExtractor')
+install_github('https://github.com/luannnguyen/CHORD/')
 ```
 
-Predicting HRD is performed in 2 steps. First, the counts of specific mutation contexts are extracted from 
-vcf (or compressed vcf.gz) files. Note that with many samples/large vcfs, it might be a good idea to run 
-this step on an HPC.
-```
-## extractSigsChord() will extract the mutation contexts for one sample. 
-## This will return a one row dataframe.
-contexts1 <- extractSigsChord(
-   vcf.snv = '/path/to/vcf_with_snvs',
-   vcf.indel = '/path/to/vcf_with_indels',
-   vcf.sv = '/path/to/vcf_with_svs',
-   sample.name = 'can_be_anything',
-   output.path = NULL ## If this is not NULL, the output dataframe will be written to this path
-)
-```
+## Usage and tutorial
+Ideally, the inputs for prediction are vcf files containing **somatic (no germline)** SNVs, indels,
+and SVs per sample.
 
-Then, the mutation context counts are run through the model to make the prediction.
-```
-## With multiple samples, the one row dataframes outputted by extractSigsChord() can be merged into 
-## one dataframe. For example:
-l_contexts <- list(contexts1, contexts2, contexts3) ## In reality this list will probably be generated from an lapply loop
-contexts <- do.call(rbind, l_contexts)
+However, it is also possible to run CHORD on non-standard vcfs or from other sources. To do this we
+can create dataframes that ```extractSigsSnv()```, ```extractSigsIndel()```, and
+```extractSigsSv()``` accept (functions from the ```mutSigExtractor``` package). The
+output from these functions can then be gathered and passed to ```chordPredict()```.
 
-## Prediction
-pred <- chordPredict(contexts)
-```
+To get started with CHORD, please see the [tutorial](http://htmlpreview.github.io/?https://github.com/luannnguyen/CHORD/blob/master/example/run_chord.html).
+
+
+
