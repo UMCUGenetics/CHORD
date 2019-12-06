@@ -18,8 +18,9 @@ install_github('https://github.com/luannnguyen/CHORD/')
 ```
 
 ## Usage and tutorial
-Ideally, the inputs for prediction are vcf files containing **somatic (no germline)** SNVs, indels,
-and SVs per sample.
+Ideally, the inputs for using CHORD are vcf files containing **somatic (no germline)** SNVs, indels,
+and SVs per sample. ```extractSigsChord()``` is used to extract the relevant features (mutation
+contexts) which are then passed to ```chordPredict()``` to make the HRD prediction.
 
 However, it is also possible to run CHORD on non-standard vcfs or from other sources. To do this we
 can create dataframes that ```extractSigsSnv()```, ```extractSigsIndel()```, and
