@@ -5,8 +5,9 @@
 \title{Extract mutation contexts in the format compatible with CHORD}
 \usage{
 extractSigsChord(vcf.snv, vcf.indel = vcf.snv, vcf.sv,
-  sample.name = "sample", sv.caller = "gridss", output.path = NULL,
-  verbose = T)
+  sample.name = "sample", vcf.filters = c(snv = NA, indel = NA, sv =
+  NA), sv.caller = "gridss", output.path = NULL, verbose = F,
+  ref.genome = DEFAULT_GENOME)
 }
 \arguments{
 \item{vcf.snv}{Path to the vcf file containing SNVs}
