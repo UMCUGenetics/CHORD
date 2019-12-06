@@ -1,0 +1,257 @@
+---
+title: "Predicting homologous recombination deficiency using CHORD"
+author: "Luan N. Nguyen"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r message=FALSE, warning=FALSE, results="hide", echo=FALSE}
+setwd('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/')
+```
+
+## Introduction
+CHORD is a random forest model that uses the relative counts of somatic mutation contexts to predict
+homologous recombination deficiency (HRD). The primary contexts used by CHORD are deletions with
+flanking microhomology and 1-100kb structural duplications. Additionally, 1-100kb structural
+duplications are used to distinguish BRCA1-type HRD from BRCA2-type HRD.
+
+Ideally, the inputs for prediction are vcf files containing **somatic (no germline)** SNVs, indels,
+and SVs per sample.
+
+Part 1 of this tutorial will demonstrate how HRD prediction can be performed locally. Here,
+somatic vcfs from a few primary tumors from the 560 breast cancer cohort (BRCA-EU, ICGC) will be
+used as example input. These are located at ```example/vcf/``` in the CHORD git repository. For
+large vcfs and/or many samples however, it is advised to run CHORD on a high-performance cluster
+(HPC).
+
+However, sometimes you may have non-standard vcfs (e.g. due to incomplete headers, essential 
+information in the INFO field, etc). This is especially true for SV vcfs, for which there currently
+is no real standard. Part 2 of this tutorial will provide an example of how you can still
+use CHORD in these cases.
+
+To run the example, set the working directory to the ```example/``` directory in the CHORD package.
+```{r eval=FALSE}
+setwd('./CHORD/example/')
+```
+
+## 1. Running CHORD on vcfs
+### Loading vcfs into R
+We will first create a dataframe to store the vcf paths as well as assign them sample names.
+
+```{r message=FALSE, warning=FALSE}
+library(CHORD)
+
+options(stringsAsFactors=F)
+
+## Get file paths from the vcf/ subdirectory
+vcf_files <- data.frame(
+  snv_indel=list.files('vcf', pattern='*snv_indel.vcf.gz', full.names=T),
+  sv=list.files('vcf', pattern='*sv.vcf.gz', full.names=T)
+)
+
+## Assign sample names to files
+vcf_files$sample <- sapply(strsplit(basename(vcf_files$snv_indel),'_'),`[`,1)
+
+vcf_files
+```
+
+Vcfs can either be in plain text format (.vcf) or compressed (.gz).
+
+SNVs and indels are often stored in the same vcf (as is the case with the example vcfs). CHORD
+therefore accepts such vcfs as input; SNVs and indels are automatically split up. However, it is
+also possible to specify separately SNV and indel vcfs (by specifying the paths separate to
+```vcf.snv``` and ```vcf.indel``` to ```extractSigsChord()```; see below).
+
+### Extracting mutation contexts
+Create a directory to write all subsequent output. 
+```{r message=FALSE, warning=FALSE}
+dir.create('output/')
+```
+***Note***: the output from this tutorial exists in the ```example/output/``` directory by default.
+Delete this directory to create new output files.
+
+Extract the features that are used as input for CHORD. With the example data, it should take
+about 30s to run.
+```{r message=FALSE, warning=FALSE}
+## Make dir to output contexts
+contexts_dir <- 'output/contexts/'
+dir.create(contexts_dir, recursive=T)
+
+## Extract contexts for all samples
+for(i in 1:nrow(vcf_files)){
+  
+  params <- as.list(vcf_files[i,])
+  out_path <- paste0(contexts_dir,'/',params$sample,'_contexts.txt')
+  
+  if(!file.exists(out_path)){
+    extractSigsChord(
+      vcf.snv=params$snv_indel,
+      vcf.sv=params$sv, sv.caller='manta',
+      sample.name=params$sample,
+      output.path=out_path, verbose=F
+    )
+  }
+}
+```
+The ```sv.caller``` parameter has been included in ```extractSigsChord()``` since different SV
+callers report SVs in different ways. In CHORD, we have included parsing for vcf produced by Manta 
+and GRIDSS (```sv.caller='manta'``` or ```sv.caller='gridss'```).
+
+We can then merge the contexts into a matrix.
+```{r message=FALSE, warning=FALSE}
+## Get the paths to the contexts txts
+context_files <- list.files(contexts_dir, full.names=T)
+
+## Read the txts into R
+l_contexts <- lapply(context_files, function(i){
+  read.delim(i, check.names=F)
+})
+
+## Merged the contexts into a matrix
+merged_contexts <- do.call(rbind, l_contexts)
+
+## Write to output directory
+write.table(merged_contexts, 'output/merged_contexts.txt', sep='\t', quote=F)
+```
+
+Here, we can see what a part of the context matrix looks like:
+```{r message=FALSE, warning=FALSE}
+merged_contexts[,1:5]
+```
+
+### Predicting HRD and interpreting CHORD's output
+Once we have the context matrix ready, we can use it for predicting HRD.
+```{r message=FALSE, warning=FALSE}
+pred <- chordPredict(merged_contexts, verbose=F)
+write.table(pred, 'output/chord_pred.txt', sep='\t', quote=F)
+
+pred
+```
+
+#### Main output
+CHORD outputs the probability of:
+
+* HRD: ```p_hrd```
+* BRCA1-type HRD: ```p_BRCA1```
+* BRCA2-type HRD: ```p_BRCA2```
+* Not HRD: ```p_none```
+
+Note that ```p_hrd``` = ```p_BRCA1``` + ```p_BRCA2```. Furthermore, ```p_none``` + ```p_BRCA1``` +
+```p_BRCA2``` = 1.
+
+```is_hrd``` tells us if ```p_hrd``` **>= 0.5 (the HRD classification threshold)**. If this is TRUE,
+```hrd_type``` tells us if the sample has BRCA1-type HRD or BRCA2-type HRD.
+
+#### QC checks
+Under ```qc```, we can see that PD7344 has ```low_indel_load```. CHORD requires >=50 indels to
+accurately determine whether a sample is HRD. PD7344 fails this check and therefore ```is_hrd``` is
+NA. Consequently, HRD subtype can not be determined, and thus ```hrd_type``` is NA.
+
+Also under ```qc```, we can see that PD11352 has ```low_sv_load```. CHORD requires >=30 SVs to
+accurately determine HRD subtype. Thus, while this sample had sufficient number of indels to
+determine HRD, the number of SVs was not sufficient, and therefore ```hrd_type``` is NA.
+
+The user may of course ignore these QC warnings and proceed with using the raw probabilities 
+outputted by CHORD (```p_hrd``` and/or ```p_BRCA1```/```pBRCA2```)
+
+## 2. Running CHORD on non-standard vcfs or from other inputs
+This section provides a demonstration of how CHORD can still be run on non-standard vcfs using
+various functions from the ```mutSigExtractor``` package. 
+
+To run CHORD on non-standard vcfs or from other sources, we can create dataframes that 
+```extractSigsSnv()```, ```extractSigsIndel()```, and ```extractSigsSv()``` accept.
+The output from these functions can then be gathered and passed to ```chordPredict()```.
+
+The tutorial here will be performed on one sample for simplicity's sake.
+
+### Extracting SNV and indel contexts
+```extractSigsSnv()``` and ```extractSigsIndel()``` only require the CHROM, POS, REF and ALT
+information in a dataframe (i.e. a bed file like format). The column names of this dataframe can be
+anything; as long as the columns are in the aforementioned order. See ```bed_snv_indel``` below for
+what this dataframe should look like.
+
+We can use ```readVcfFields()``` to read a vcf into R as a dataframe. *Warning*: this may crash R 
+for very large vcfs! In these cases you may need to do some pre-process
+```{r message=FALSE, warning=FALSE}
+bed_snv_indel <- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c('CHROM','POS','REF','ALT'))
+head(bed_snv_indel)
+```
+
+Since the ```bed_snv_indel``` dataframe is already in the correct format, this can be directly
+passed to ```extractSigsSnv()``` and ```extractSigsIndel()```. Make sure to specify
+```output='contexts'``` for ```extractSigsSnv()```.
+
+```{r message=FALSE, warning=FALSE}
+contexts_snv <- extractSigsSnv(bed=bed_snv_indel, output='contexts', sample.name='PD3905')
+contexts_snv[1:5,,drop=F]
+```
+
+```{r message=FALSE, warning=FALSE}
+contexts_indel <- extractSigsIndel(bed=bed_snv_indel, output='contexts', sample.name='PD3905')
+contexts_indel[1:5,,drop=F]
+```
+
+### Extracting SV contexts
+```extractSigsSv()``` requires a dataframe with SV type (values must be one of the following: DEL,
+DUP, INV, TRA) and SV length information. Again, the column names of this dataframe can be anything;
+as long as the columns are in the aforementioned order.
+
+Again, ```readVcfFields()``` can be used to read the vcf. Manta reports SVTYPE and SVLEN in the INFO
+field, so only this field needs to be extracted from the vcf.
+
+```{r message=FALSE, warning=FALSE}
+vcf_sv <- readVcfFields('vcf/PD3905_sv.vcf.gz', fields='INFO')
+head(vcf_sv)
+```
+
+Then, split the data each INFO entry, which are separated by ```;```.
+```{r message=FALSE, warning=FALSE}
+vcf_sv_info <- strsplit(vcf_sv$INFO,';')
+vcf_sv_info[1:2]
+```
+
+Extract the SVTYPE and SVLEN data, and put it in the dataframe format that ```extractSigsSv()``` accepts.
+```{r message=FALSE, warning=FALSE}
+sv_type <- sapply(vcf_sv_info,`[`,2) ## Select the 2nd object from each INFO entry
+sv_type <- gsub('SVTYPE=','',sv_type) ## Remove the 'SVTYPE=' prefix
+
+sv_len <- sapply(vcf_sv_info,`[`,1) ## Select the 1st object from each INFO entry
+sv_len <- gsub('SVLEN=','',sv_len) ## Remove the 'SVLEN=' prefix
+sv_len <- as.integer(sv_len) ## Convert the character vector to an integer vector
+
+df_sv <- data.frame(sv_type, sv_len)
+head(df_sv)
+```
+
+You may notice that translocations (TRA) have an SV length, which doesn't really make sense. This is
+no problem since ```extractSigsSv()``` discards SV length data for translocations.
+
+We can then pass ```df_sv``` to ```extractSigsSv()```. Again, make sure to specify
+```output='contexts'```.
+```{r message=FALSE, warning=FALSE}
+contexts_sv <- extractSigsSv(df=df_sv, output='contexts', sample.name='PD3905')
+head(contexts_sv)
+```
+
+Merge the contexts into a single matrix. Since ```chordPredict()``` expects a matrix with samples as
+rows and contexts as columns, we also need to transpose the matrix.
+```{r message=FALSE, warning=FALSE}
+contexts <- rbind(contexts_snv,contexts_indel,contexts_sv)
+contexts <- t(contexts)
+
+contexts[,1:5,drop=F]
+```
+
+### Predicting HRD
+Lastly, make the HRD prediction.
+```{r message=FALSE, warning=FALSE}
+pred <- chordPredict(contexts)
+
+pred
+```
+
+Please refer back to the previous section of the tutorial for interpreting CHORD's output.
+
+
