@@ -1674,7 +1674,7 @@ pred</code></pre>
 <div id="extracting-snv-and-indel-contexts" class="section level3">
 <h3>Extracting SNV and indel contexts</h3>
 <p><code>extractSigsSnv()</code> and <code>extractSigsIndel()</code> only require the CHROM, POS, REF and ALT information in a dataframe (i.e. a bed file like format). The column names of this dataframe can be anything; as long as the columns are in the aforementioned order. See <code>bed_snv_indel</code> below for what this dataframe should look like.</p>
-<p>We can use <code>readVcfFields()</code> to read a vcf into R as a dataframe. <em>Warning</em>: this may crash R for very large vcfs! In these cases you may need to do some pre-process</p>
+<p>We can use <code>readVcfFields()</code> to read a vcf into R as a dataframe. <em>Warning</em>: this may crash R for very large vcfs! In these cases you may need to do some pre-processing of the vcfs.</p>
 <pre class="r"><code>bed_snv_indel &lt;- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c('CHROM','POS','REF','ALT'))
 head(bed_snv_indel)</code></pre>
 <pre><code>##   CHROM     POS REF ALT
