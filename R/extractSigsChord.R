@@ -20,11 +20,12 @@
 extractSigsChord <- function(
   vcf.snv, 
   vcf.indel=vcf.snv, 
-  vcf.sv, 
-  sample.name='sample', 
-  sv.caller='gridss', output.path=NULL, verbose=T
+  vcf.sv,
+  sample.name='sample',
+  vcf.filters=c(snv=NA,indel=NA,sv=NA),
+  sv.caller='gridss', output.path=NULL, verbose=F,
+  ref.genome=DEFAULT_GENOME
 ){
-  
   
   ######### Load vcfs #########
   if(verbose){ message('\n#====== Loading variants from vcfs ======#') }
@@ -32,29 +33,42 @@ extractSigsChord <- function(
   variants <- list()
   
   if(verbose){ message('\n## SNVs') }
-  variants$snv <- variantsFromVcf(vcf.snv, mode='snv_indel', vcf.filter='PASS', verbose=verbose)
+  variants$snv <- variantsFromVcf(
+    vcf.snv, mode='snv_indel', 
+    vcf.filter=vcf.filters['snv'],
+    ref.genome=ref.genome,
+    verbose=verbose
+  )
   
   if(verbose){ message('\n## Indels') }
   if(vcf.indel==vcf.snv){
     if(verbose){ message('vcf file is the same for both SNVs and indels. Skipping reading vcf for indels') }
     variants$indel <- variants$snv
   } else {
-    variants$indel <- variantsFromVcf(vcf.indel, mode='snv_indel', vcf.filter='PASS', verbose=verbose)
+    variants$indel <- variantsFromVcf(
+      vcf.indel, mode='snv_indel', 
+      vcf.filter=vcf.filters['indel'], 
+      ref.genome=ref.genome,
+      verbose=verbose
+    )
   }
   
   if(verbose){ message('\n## SVs') }
-  variants$sv <- variantsFromVcf(vcf.sv, mode='sv', vcf.filter='PASS', sv.caller=sv.caller, verbose=verbose)
-  
+  variants$sv <- variantsFromVcf(
+    vcf.sv, mode='sv', 
+    vcf.filter=vcf.filters['sv'], 
+    sv.caller=sv.caller
+  )
   
   ######### Count contexts #########
   if(verbose){ message('\n#====== Counting mutation contexts ======#') }
   sigs <- list()
   
   if(verbose){ message('\n## Single base substitutions') }
-  sigs$snv <- extractSigsSnv(bed=variants$snv, output='contexts', verbose=verbose)
+  sigs$snv <- extractSigsSnv(bed=variants$snv, output='contexts', ref.genome=ref.genome, verbose=verbose)
   
   if(verbose){ message('\n## Indel contexts (types x lengths)') }
-  sigs$indel <- extractSigsIndel(bed=variants$indel, verbose=verbose)
+  sigs$indel <- extractSigsIndel(bed=variants$indel, ref.genome=ref.genome, verbose=verbose)
   
   if(verbose){ message('\n## SV contexts (types x lengths)') }
   sigs$sv <- extractSigsSv(
