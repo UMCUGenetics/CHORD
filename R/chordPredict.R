@@ -49,27 +49,47 @@ chordPredict <- function(features, rf.model=CHORD, hrd.cutoff=0.5, show.features
   df$p_hrd <- df$p_BRCA1 + df$p_BRCA2
   
   ## QC
-  df$has_msi <- with(features_split,{
+  qc <- list()
+  qc$has_msi <- with(features_split,{
     rowSums(indel[,grep('rep',colnames(indel)),drop=F]) > 14000
   })
   
-  df$low_indel_load <- rowSums(features_split$indel) < 50
-  df$low_sv_load <- rowSums(features_split$sv) < 30
+  qc$low_indel_load <- rowSums(features_split$indel) < 50
+  qc$low_sv_load <- rowSums(features_split$sv) < 30
+  qc <- as.data.frame(qc)
   
-  df$failed_qc <- with(df,{ has_msi | low_indel_load | low_sv_load })
+  failed_qc <- with(qc,{ has_msi | low_indel_load | low_sv_load })
   
-  if(verbose & sum(df$failed_qc)>0){
+  if(verbose & sum(failed_qc)>0){
     message(
-      sum(df$failed_qc),' sample(s) failed QC:\n', 
-      '  ', sum(df$has_msi),' with MSI (>14000 indels within repeats)\n',
-      '  ', sum(df$low_indel_load), ' with <50 indels\n',
-      '  ', sum(df$low_sv_load), ' with <30 SVs'
+      sum(failed_qc),' sample(s) failed QC:\n', 
+      '  ', sum(qc$has_msi),' with MSI (>14000 indels within repeats)\n',
+      '  ', sum(qc$low_indel_load), ' with <50 indels\n',
+      '  ', sum(qc$low_sv_load), ' with <30 SVs'
     )
   }
   
-  ## Determine if sample is (confident) HRD
+  df$qc <- unlist(apply(qc,1,function(i){
+    string <- colnames(qc)[i]
+    if(length(string)==0){ string <- 'pass' }
+    return(string)
+  }))
+  
+  ## Determine if sample is HRD
   df$is_hrd <- df$p_hrd >= hrd.cutoff
-  df$is_hrd[ df$failed_qc ] <- NA
+  df$is_hrd[ qc$low_indel_load ] <- NA
+  
+  ## Determine HRD type
+  df$hrd_type <- unlist(
+    Map(function(p_BRCA1, p_BRCA2, p_hrd){
+      if(p_hrd>=hrd.cutoff){
+        c('BRCA1_type','BRCA2_type')[ which.max(c(p_BRCA1,p_BRCA2)) ]
+      } else {
+        'none'
+      }
+    }, df$p_BRCA1, df$p_BRCA2, df$p_hrd)
+  )
+  df$hrd_type[ qc$low_sv_load | qc$low_indel_load ] <- NA
   
   if(show.features){
     df <- merge(
