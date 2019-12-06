@@ -252,6 +252,6 @@ pred <- chordPredict(contexts)
 pred
 ```
 
-Please refer back to the previous section of the tutorial for interpreting CHORD's output.
+Please refer back to section 1 of the tutorial for interpreting CHORD's output.
 
 
