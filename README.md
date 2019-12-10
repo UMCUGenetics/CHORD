@@ -7,9 +7,22 @@ flanking microhomology and 1-100kb structural duplications. Additionally, 1-100k
 duplications are used to distinguish BRCA1-type HRD from BRCA2-type HRD.
 
 ## Installation
-Use devtools to install CHORD and mutSigExtractor directly from github. mutSigExtractor is required
-for extracting the features that CHORD uses.
+CHORD is itself an R package. Before using CHORD, some other R packages will also need to be 
+installed, with the main one being mutSigExtractor, which is required for extracting the mutation 
+contexts that CHORD uses. The below code can be used to install CHORD and mutSigExtractor, as well 
+as the dependencies for both packages.
+
 ```
+## Bioconductor packages required by mutSigExtractor
+install.packages('BiocManager')
+BiocManager::install(
+	c('GenomicRanges','VariantAnnotation','BSgenome','BSgenome.Hsapiens.UCSC.hg19')
+)
+
+## randomForest is required by CHORD
+install.packages('randomForest')
+
+## Install CHORD and mutSigExtractor directly from github using devtools
 install.packages("devtools")
 library(devtools)
 
