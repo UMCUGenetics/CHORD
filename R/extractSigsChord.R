@@ -73,7 +73,8 @@ extractSigsChord <- function(
   if(verbose){ message('\n## SV contexts (types x lengths)') }
   sigs$sv <- extractSigsSv(
     df=variants$sv, sv.caller=sv.caller, output='contexts',
-    sv.len.cutoffs = c(0, 10^3, 10^4, 10^5, 10^6, 10^7,Inf, verbose=verbose)
+    sv.len.cutoffs = c(0, 10^3, 10^4, 10^5, 10^6, 10^7,Inf),
+    verbose=verbose
   )
   
   ######### Export #########
