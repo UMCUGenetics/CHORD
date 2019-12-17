@@ -1524,10 +1524,10 @@ div.tocify {
 <div id="vcfs-as-input" class="section level3">
 <h3>Vcfs as input</h3>
 <p>CHORD can be supplied with vcf files containing <strong>somatic (no germline)</strong> SNVs, indels, and SVs per sample. The first step is to extract the mutation contexts required by CHORD:</p>
-<pre><code>contexts &lt;- extractSigsChord(
-  vcf.snv = /path/to/vcf/with/snvs/,
-  vcf.indel = /path/to/vcf/with/snvs/,
-  vcf.sv = /path/to/vcf/with/svs/,
+<pre class="r"><code>contexts &lt;- extractSigsChord(
+  vcf.snv = '/path/to/vcf/with/snvs/',
+  vcf.indel = '/path/to/vcf/with/snvs/',
+  vcf.sv = '/path/to/vcf/with/svs/',
   sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta'
 )</code></pre>
 <p>Note that there is no real standard for SV vcfs. However, parsing vcfs produced by Manta or GRIDSS has been built into CHORD.</p>
@@ -1539,8 +1539,8 @@ div.tocify {
 <li>For SNVs and indels, a dataframe with the columns: chrom, pos, ref, alt</li>
 <li>For SVs, a dataframe with the columns: sv_type, sv_len. For sv_type, values must be DEL, DUP, INV, TRA</li>
 </ul>
-<p>Note that the column names themselves do not matter. As long as the columns are in the aforementioned order.</p>
-<pre><code>contexts &lt;- extractSigsChord(
+<p>Note that the column names themselves do not matter, as long as the columns are in the aforementioned order.</p>
+<pre class="r"><code>contexts &lt;- extractSigsChord(
   df.snv = bed_file_like_dataframe_with_snvs,
   df.indel = bed_file_like_dataframe_with_indels,
   df.sv = dataframe_with_svtype_and_sv_len
@@ -1549,22 +1549,21 @@ div.tocify {
 <div id="inputs-are-flexible" class="section level3">
 <h3>Inputs are flexible</h3>
 <p>Often, SNV and indels are reported in the same vcfs. In such cases, the vcf path can be specified to the <code>vcf.snv</code> argument (<code>vcf.indel</code> can be left out).</p>
-<pre><code>contexts &lt;- extractSigsChord(
-  vcf.snv = /path/to/vcf/with/snvs_and_indels/,
-  vcf.sv = /path/to/vcf/with/svs/,
+<pre class="r"><code>contexts &lt;- extractSigsChord(
+  vcf.snv = '/path/to/vcf/with/snvs_and_indels/',
+  vcf.sv = '/path/to/vcf/with/svs/',
   sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta'
 )</code></pre>
-<p>The vcf.* and df.* arguments can be mixed.</p>
-<pre><code>contexts &lt;- extractSigsChord(
-  vcf.snv = /path/to/vcf/with/snvs/,
-  vcf.indel = /path/to/vcf/with/snvs/,
+<p>The vcf.* and df.* arguments can be mixed. This is especially useful in the case of SV vcfs, since it is possible that you will need to parse these yourself.</p>
+<pre class="r"><code>contexts &lt;- extractSigsChord(
+  vcf.snv = '/path/to/vcf/with/snvs/',
+  vcf.indel = '/path/to/vcf/with/snvs/',
   df.sv = dataframe_with_svtype_and_sv_len
 )</code></pre>
-<p>This is especially useful in the case of SV vcfs, since it is possible that you will need to parse these yourself.</p>
 </div>
 <div id="predicting-hrd" class="section level3">
 <h3>Predicting HRD</h3>
-<p>Once we have the mutation contexts, a prediction can be made</p>
+<p>Once we have the mutation contexts, a prediction can be made.</p>
 <pre><code>chordPredict(contexts)</code></pre>
 <p>For more details on how to use CHORD, please see the below tutorial.</p>
 </div>
@@ -1602,7 +1601,7 @@ vcf_files</code></pre>
 ## 4  vcf/PD4116_snv_indel.vcf.gz  vcf/PD4116_sv.vcf.gz  PD4116
 ## 5  vcf/PD7344_snv_indel.vcf.gz  vcf/PD7344_sv.vcf.gz  PD7344</code></pre>
 <p>Vcfs can either be in plain text format (.vcf) or compressed (.gz).</p>
-<p>SNVs and indels are often stored in the same vcf (as is the case with the example vcfs). CHORD therefore accepts such vcfs as input; SNVs and indels are automatically split up. However, it is also possible to specify separately SNV and indel vcfs (by specifying the paths separate to <code>vcf.snv</code> and <code>vcf.indel</code> to <code>extractSigsChord()</code>; see below).</p>
+<p>SNVs and indels are often stored in the same vcf (as is the case with the example vcfs). CHORD therefore accepts such vcfs as input; SNVs and indels are automatically split up. However, it is also possible to specify the SNV and indel vcfs separately (by specifying the paths separately to <code>vcf.snv</code> and <code>vcf.indel</code> to <code>extractSigsChord()</code>; see below).</p>
 </div>
 <div id="extracting-mutation-contexts" class="section level4">
 <h4>Extracting mutation contexts</h4>
@@ -1631,10 +1630,10 @@ for(i in 1:nrow(vcf_files)){
 }</code></pre>
 <p>The <code>sv.caller</code> parameter has been included in <code>extractSigsChord()</code> since different SV callers report SVs in different ways. In CHORD, we have included parsing for vcf produced by Manta and GRIDSS (<code>sv.caller='manta'</code> or <code>sv.caller='gridss'</code>).</p>
 <p>We can then merge the contexts into a matrix.</p>
-<pre class="r"><code>## Get the paths to the contexts txts
+<pre class="r"><code>## Get the paths of the contexts txt files
 context_files &lt;- list.files(contexts_dir, full.names=T)
 
-## Read the txts into R
+## Read the txt files into R
 l_contexts &lt;- lapply(context_files, function(i){
   read.delim(i, check.names=F)
 })
@@ -1685,7 +1684,7 @@ pred</code></pre>
 <h5>QC checks</h5>
 <p>Under <code>qc</code>, we can see that PD7344 has <code>low_indel_load</code>. CHORD requires &gt;=50 indels to accurately determine whether a sample is HRD. PD7344 fails this check and therefore <code>is_hrd</code> is NA. Consequently, HRD subtype can not be determined, and thus <code>hrd_type</code> is NA.</p>
 <p>Also under <code>qc</code>, we can see that PD11352 has <code>low_sv_load</code>. CHORD requires &gt;=30 SVs to accurately determine HRD subtype. Thus, while this sample had sufficient number of indels to determine HRD, the number of SVs was not sufficient, and therefore <code>hrd_type</code> is NA.</p>
-<p>The user may of course ignore these QC warnings and proceed with using the raw probabilities outputted by CHORD (<code>p_hrd</code> and/or <code>p_BRCA1</code>/<code>pBRCA2</code>)</p>
+<p>The user may of course ignore these QC warnings and proceed with using the raw probabilities outputted by CHORD (<code>p_hrd</code> and/or <code>p_BRCA1</code>/<code>pBRCA2</code>).</p>
 </div>
 </div>
 </div>
@@ -1696,11 +1695,11 @@ pred</code></pre>
 <p>In this part of the tutorial, we will create the required dataframes from the example vcfs. This will thus also serve as a short demonstration on how one could parse vcfs in R. Furthermore, we will focus on one sample for simplicity’s sake.</p>
 <div id="snv-and-indel-dataframes" class="section level3">
 <h3>SNV and indel dataframes</h3>
-<p>For SNVs and indels, dataframe containing CHROM, POS, REF and ALT information (i.e. a bed file like format) is required. The column names of this dataframe can be anything; as long as the columns are in the aforementioned order.</p>
+<p>For SNVs and indels, a dataframe containing CHROM, POS, REF and ALT information (i.e. a bed file like format) is required. The column names of this dataframe can be anything; as long as the columns are in the aforementioned order.</p>
 <p>We can use <code>readVcfFields()</code> from the <code>mutSigExtractor</code> package to read a vcf into R as a dataframe.</p>
 <pre class="r"><code>df_snv_indel &lt;- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c('CHROM','POS','REF','ALT'))</code></pre>
 <p>Alternatively, we can specify the vcf columns we want by index.</p>
-<pre><code>df_snv_indel &lt;- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c(1,2,4,5))</code></pre>
+<pre class="r"><code>df_snv_indel &lt;- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c(1,2,4,5))</code></pre>
 <p>The dataframe shown below is in the correct format as required by CHORD. This dataframe contains both SNVs and indels. This is not a problem as <code>extractSigsChord()</code></p>
 <pre class="r"><code>df_snv_indel[25:30,]</code></pre>
 <pre><code>##    CHROM      POS           REF ALT
