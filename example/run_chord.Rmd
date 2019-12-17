@@ -70,6 +70,25 @@ contexts <- extractSigsChord(
 )
 ```
 
+A different reference genome than the default can be used. Genomes should be BSgenomes.
+```{r eval=FALSE, error=FALSE}
+## Make sure to install and load the desired first
+install.packages('BiocManager')
+ref_genome <- 'BSgenome.Hsapiens.UCSC.hg38'
+BiocManager::install(ref_genome)
+library(ref_genome)
+
+## Specify the name of the BSgenome object to the ref.genome argument
+contexts <- extractSigsChord(
+  vcf.snv = '/path/to/vcf/with/snvs/',
+  vcf.indel = '/path/to/vcf/with/snvs/',
+  vcf.sv = '/path/to/vcf/with/svs/',
+  sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta',
+  ref.genome=ref_genome
+)
+```
+
+
 ### Predicting HRD
 Once we have the mutation contexts, a prediction can be made.
 ```
@@ -243,7 +262,8 @@ df_snv_indel <- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c(1,2,4,5))
 ```
 
 The dataframe shown below is in the correct format as required by CHORD. This dataframe contains
-both SNVs and indels. This is not a problem as ```extractSigsChord()```
+both SNVs and indels. This is not a problem as we can specify the argument```df.snv``` (and leaving
+out ```df.indel```) in ```extractSigsChord()``` as is done later in the tutorial.
 ```{r message=FALSE, warning=FALSE}
 df_snv_indel[25:30,]
 ```

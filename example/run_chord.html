@@ -1560,6 +1560,21 @@ div.tocify {
   vcf.indel = '/path/to/vcf/with/snvs/',
   df.sv = dataframe_with_svtype_and_sv_len
 )</code></pre>
+<p>A different reference genome than the default can be used. Genomes should be BSgenomes.</p>
+<pre class="r"><code>## Make sure to install and load the desired first
+install.packages('BiocManager')
+ref_genome &lt;- 'BSgenome.Hsapiens.UCSC.hg38'
+BiocManager::install(ref_genome)
+library(ref_genome)
+
+## Specify the name of the BSgenome object to the ref.genome argument
+contexts &lt;- extractSigsChord(
+  vcf.snv = '/path/to/vcf/with/snvs/',
+  vcf.indel = '/path/to/vcf/with/snvs/',
+  vcf.sv = '/path/to/vcf/with/svs/',
+  sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta',
+  ref.genome=ref_genome
+)</code></pre>
 </div>
 <div id="predicting-hrd" class="section level3">
 <h3>Predicting HRD</h3>
@@ -1700,7 +1715,7 @@ pred</code></pre>
 <pre class="r"><code>df_snv_indel &lt;- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c('CHROM','POS','REF','ALT'))</code></pre>
 <p>Alternatively, we can specify the vcf columns we want by index.</p>
 <pre class="r"><code>df_snv_indel &lt;- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c(1,2,4,5))</code></pre>
-<p>The dataframe shown below is in the correct format as required by CHORD. This dataframe contains both SNVs and indels. This is not a problem as <code>extractSigsChord()</code></p>
+<p>The dataframe shown below is in the correct format as required by CHORD. This dataframe contains both SNVs and indels. This is not a problem as we can specify the argument<code>df.snv</code> (and leaving out <code>df.indel</code>) in <code>extractSigsChord()</code> as is done later in the tutorial.</p>
 <pre class="r"><code>df_snv_indel[25:30,]</code></pre>
 <pre><code>##    CHROM      POS           REF ALT
 ## 25     1 16145827             A   C
