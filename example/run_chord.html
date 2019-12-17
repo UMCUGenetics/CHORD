@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="Luan N. Nguyen" />
@@ -68,8 +68,6 @@ overflow: auto;
 margin-left: 2%;
 position: fixed;
 border: 1px solid #ccc;
-webkit-border-radius: 6px;
-moz-border-radius: 6px;
 border-radius: 6px;
 }
 
@@ -97,9 +95,14 @@ font-size: 12px;
 .tocify-subheader .tocify-subheader {
 text-indent: 30px;
 }
-
 .tocify-subheader .tocify-subheader .tocify-subheader {
 text-indent: 40px;
+}
+.tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader {
+text-indent: 50px;
+}
+.tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader {
+text-indent: 60px;
 }
 
 .tocify .tocify-item > a, .tocify .nav-list .nav-header {
@@ -503,13 +506,13 @@ float: none;
 
           item.append($("<a/>", {
 
-            "text": self.text()
+            "html": self.html()
 
           }));
 
         } else {
 
-          item.text(self.text());
+          item.html(self.html());
 
         }
 
@@ -1340,7 +1343,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -1402,6 +1404,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -1414,48 +1417,9 @@ summary {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
 
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = true;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -1469,6 +1433,12 @@ $(document).ready(function ()  {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -1504,8 +1474,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -1550,16 +1518,68 @@ div.tocify {
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
 <p>CHORD is a random forest model that uses the relative counts of somatic mutation contexts to predict homologous recombination deficiency (HRD). The primary contexts used by CHORD are deletions with flanking microhomology and 1-100kb structural duplications. Additionally, 1-100kb structural duplications are used to distinguish BRCA1-type HRD from BRCA2-type HRD.</p>
-<p>Ideally, the inputs for prediction are vcf files containing <strong>somatic (no germline)</strong> SNVs, indels, and SVs per sample.</p>
-<p>Part 1 of this tutorial will demonstrate how HRD prediction can be performed locally. Here, somatic vcfs from a few primary tumors from the 560 breast cancer cohort (BRCA-EU, ICGC) will be used as example input. These are located at <code>example/vcf/</code> in the CHORD git repository. For large vcfs and/or many samples however, it is advised to run CHORD on a high-performance cluster (HPC).</p>
-<p>However, sometimes you may have non-standard vcfs (e.g. due to incomplete headers, essential information in the INFO field, etc). This is especially true for SV vcfs, for which there currently is no real standard. Part 2 of this tutorial will provide an example of how you can still use CHORD in these cases.</p>
+</div>
+<div id="quick-start" class="section level2">
+<h2>Quick start</h2>
+<div id="vcfs-as-input" class="section level3">
+<h3>Vcfs as input</h3>
+<p>CHORD can be supplied with vcf files containing <strong>somatic (no germline)</strong> SNVs, indels, and SVs per sample. The first step is to extract the mutation contexts required by CHORD:</p>
+<pre><code>contexts &lt;- extractSigsChord(
+  vcf.snv = /path/to/vcf/with/snvs/,
+  vcf.indel = /path/to/vcf/with/snvs/,
+  vcf.sv = /path/to/vcf/with/svs/,
+  sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta'
+)</code></pre>
+<p>Note that there is no real standard for SV vcfs. However, parsing vcfs produced by Manta or GRIDSS has been built into CHORD.</p>
+</div>
+<div id="dataframes-as-input" class="section level3">
+<h3>Dataframes as input</h3>
+<p>Alternatively, dataframes can be used as input (handy if you want to parse the vcfs yourself and supply this preprocessed data to CHORD).</p>
+<ul>
+<li>For SNVs and indels, a dataframe with the columns: chrom, pos, ref, alt</li>
+<li>For SVs, a dataframe with the columns: sv_type, sv_len. For sv_type, values must be DEL, DUP, INV, TRA</li>
+</ul>
+<p>Note that the column names themselves do not matter. As long as the columns are in the aforementioned order.</p>
+<pre><code>contexts &lt;- extractSigsChord(
+  df.snv = bed_file_like_dataframe_with_snvs,
+  df.indel = bed_file_like_dataframe_with_indels,
+  df.sv = dataframe_with_svtype_and_sv_len
+)</code></pre>
+</div>
+<div id="inputs-are-flexible" class="section level3">
+<h3>Inputs are flexible</h3>
+<p>Often, SNV and indels are reported in the same vcfs. In such cases, the vcf path can be specified to the <code>vcf.snv</code> argument (<code>vcf.indel</code> can be left out).</p>
+<pre><code>contexts &lt;- extractSigsChord(
+  vcf.snv = /path/to/vcf/with/snvs_and_indels/,
+  vcf.sv = /path/to/vcf/with/svs/,
+  sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta'
+)</code></pre>
+<p>The vcf.* and df.* arguments can be mixed.</p>
+<pre><code>contexts &lt;- extractSigsChord(
+  vcf.snv = /path/to/vcf/with/snvs/,
+  vcf.indel = /path/to/vcf/with/snvs/,
+  df.sv = dataframe_with_svtype_and_sv_len
+)</code></pre>
+<p>This is especially useful in the case of SV vcfs, since it is possible that you will need to parse these yourself.</p>
+</div>
+<div id="predicting-hrd" class="section level3">
+<h3>Predicting HRD</h3>
+<p>Once we have the mutation contexts, a prediction can be made</p>
+<pre><code>chordPredict(contexts)</code></pre>
+<p>For more details on how to use CHORD, please see the below tutorial.</p>
+</div>
+</div>
+<div id="tutorial" class="section level2">
+<h2>Tutorial</h2>
+<p>This tutorial will demonstrate how HRD prediction can be performed locally. Somatic vcfs from a few primary tumors from the 560 breast cancer cohort (BRCA-EU, ICGC) will be used as example input. These are located at <code>example/vcf/</code> in the CHORD git repository. For large vcfs and/or many samples however, it is advised to run CHORD on a high-performance cluster (HPC).</p>
+<p>In part 1, we will use the vcfs directly as input for CHORD.</p>
+<p>Part 2 of this tutorial will provide a demonstration of how we can parse the vcfs into dataframes that CHORD accepts. This is particularly useful if you may have non-standard vcfs, as is often the case with SV vcfs. Of course, it is possible to produce the required input dataframes from any data source, and not just vcfs; it only requires a bit of data wrangling :).</p>
 <p>To run the example, set the working directory to the <code>example/</code> directory in the CHORD package.</p>
 <pre class="r"><code>setwd('./CHORD/example/')</code></pre>
-</div>
-<div id="running-chord-on-vcfs" class="section level2">
-<h2>1. Running CHORD on vcfs</h2>
-<div id="loading-vcfs-into-r" class="section level3">
-<h3>Loading vcfs into R</h3>
+<div id="running-chord-on-vcfs" class="section level3">
+<h3>1. Running CHORD on vcfs</h3>
+<div id="loading-vcfs-into-r" class="section level4">
+<h4>Loading vcfs into R</h4>
 <p>We will first create a dataframe to store the vcf paths as well as assign them sample names.</p>
 <pre class="r"><code>library(CHORD)
 
@@ -1584,8 +1604,8 @@ vcf_files</code></pre>
 <p>Vcfs can either be in plain text format (.vcf) or compressed (.gz).</p>
 <p>SNVs and indels are often stored in the same vcf (as is the case with the example vcfs). CHORD therefore accepts such vcfs as input; SNVs and indels are automatically split up. However, it is also possible to specify separately SNV and indel vcfs (by specifying the paths separate to <code>vcf.snv</code> and <code>vcf.indel</code> to <code>extractSigsChord()</code>; see below).</p>
 </div>
-<div id="extracting-mutation-contexts" class="section level3">
-<h3>Extracting mutation contexts</h3>
+<div id="extracting-mutation-contexts" class="section level4">
+<h4>Extracting mutation contexts</h4>
 <p>Create a directory to write all subsequent output.</p>
 <pre class="r"><code>dir.create('output/')</code></pre>
 <p><strong><em>Note</em></strong>: the output from this tutorial exists in the <code>example/output/</code> directory by default. Delete this directory to create new output files.</p>
@@ -1624,7 +1644,7 @@ merged_contexts &lt;- do.call(rbind, l_contexts)
 
 ## Write to output directory
 write.table(merged_contexts, 'output/merged_contexts.txt', sep='\t', quote=F)</code></pre>
-<p>Here, we can see what a part of the context matrix looks like:</p>
+<p>Below we can see what a part of the context matrix looks like.</p>
 <pre class="r"><code>merged_contexts[,1:5]</code></pre>
 <pre><code>##         A[C&gt;A]A A[C&gt;A]C A[C&gt;A]G A[C&gt;A]T C[C&gt;A]A
 ## PD10010      37      25       8      24      34
@@ -1633,8 +1653,8 @@ write.table(merged_contexts, 'output/merged_contexts.txt', sep='\t', quote=F)</c
 ## PD4116      123     136      15     142     164
 ## PD7344       10       9       1       6      11</code></pre>
 </div>
-<div id="predicting-hrd-and-interpreting-chords-output" class="section level3">
-<h3>Predicting HRD and interpreting CHORD’s output</h3>
+<div id="predicting-hrd-and-interpreting-chords-output" class="section level4">
+<h4>Predicting HRD and interpreting CHORD’s output</h4>
 <p>Once we have the context matrix ready, we can use it for predicting HRD.</p>
 <pre class="r"><code>pred &lt;- chordPredict(merged_contexts, verbose=F)
 write.table(pred, 'output/chord_pred.txt', sep='\t', quote=F)
@@ -1646,8 +1666,11 @@ pred</code></pre>
 ## 3  PD3905  0.060   0.924   0.016 0.940           pass   TRUE BRCA1_type
 ## 4  PD4116  0.102   0.106   0.792 0.898           pass   TRUE BRCA2_type
 ## 5  PD7344  0.998   0.000   0.002 0.002 low_indel_load     NA       &lt;NA&gt;</code></pre>
-<div id="main-output" class="section level4">
-<h4>Main output</h4>
+</div>
+<div id="interpreting-the-output" class="section level4">
+<h4>Interpreting the output</h4>
+<div id="main-output" class="section level5">
+<h5>Main output</h5>
 <p>CHORD outputs the probability of:</p>
 <ul>
 <li>HRD: <code>p_hrd</code></li>
@@ -1658,54 +1681,40 @@ pred</code></pre>
 <p>Note that <code>p_hrd</code> = <code>p_BRCA1</code> + <code>p_BRCA2</code>. Furthermore, <code>p_none</code> + <code>p_BRCA1</code> + <code>p_BRCA2</code> = 1.</p>
 <p><code>is_hrd</code> tells us if <code>p_hrd</code> <strong>&gt;= 0.5 (the HRD classification threshold)</strong>. If this is TRUE, then <code>hrd_type</code> will tell us if the sample has BRCA1-type HRD or BRCA2-type HRD (=max(<code>p_BRCA1</code>,<code>p_BRCA2</code>)).</p>
 </div>
-<div id="qc-checks" class="section level4">
-<h4>QC checks</h4>
+<div id="qc-checks" class="section level5">
+<h5>QC checks</h5>
 <p>Under <code>qc</code>, we can see that PD7344 has <code>low_indel_load</code>. CHORD requires &gt;=50 indels to accurately determine whether a sample is HRD. PD7344 fails this check and therefore <code>is_hrd</code> is NA. Consequently, HRD subtype can not be determined, and thus <code>hrd_type</code> is NA.</p>
 <p>Also under <code>qc</code>, we can see that PD11352 has <code>low_sv_load</code>. CHORD requires &gt;=30 SVs to accurately determine HRD subtype. Thus, while this sample had sufficient number of indels to determine HRD, the number of SVs was not sufficient, and therefore <code>hrd_type</code> is NA.</p>
 <p>The user may of course ignore these QC warnings and proceed with using the raw probabilities outputted by CHORD (<code>p_hrd</code> and/or <code>p_BRCA1</code>/<code>pBRCA2</code>)</p>
 </div>
 </div>
 </div>
-<div id="running-chord-on-non-standard-vcfs-or-from-other-inputs" class="section level2">
-<h2>2. Running CHORD on non-standard vcfs or from other inputs</h2>
-<p>This section provides a demonstration of how CHORD can still be run on non-standard vcfs using various functions from the <code>mutSigExtractor</code> package.</p>
-<p>To run CHORD on non-standard vcfs or from other sources, we can create dataframes that <code>extractSigsSnv()</code>, <code>extractSigsIndel()</code>, and <code>extractSigsSv()</code> accept. The output from these functions can then be gathered and passed to <code>chordPredict()</code>.</p>
-<p>The tutorial here will be performed on one sample for simplicity’s sake.</p>
-<div id="extracting-snv-and-indel-contexts" class="section level3">
-<h3>Extracting SNV and indel contexts</h3>
-<p><code>extractSigsSnv()</code> and <code>extractSigsIndel()</code> only require the CHROM, POS, REF and ALT information in a dataframe (i.e. a bed file like format). The column names of this dataframe can be anything; as long as the columns are in the aforementioned order. See <code>bed_snv_indel</code> below for what this dataframe should look like.</p>
-<p>We can use <code>readVcfFields()</code> to read a vcf into R as a dataframe. <em>Warning</em>: this may crash R for very large vcfs! In these cases you may need to do some pre-processing of the vcfs.</p>
-<pre class="r"><code>bed_snv_indel &lt;- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c('CHROM','POS','REF','ALT'))
-head(bed_snv_indel)</code></pre>
-<pre><code>##   CHROM     POS REF ALT
-## 1     1 1563989   G   A
-## 2     1 1811131   G   C
-## 3     1 2289237   C   T
-## 4     1 3034345   T   G
-## 5     1 3535469   G   T
-## 6     1 4249384   C   G</code></pre>
-<p>Since the <code>bed_snv_indel</code> dataframe is already in the correct format, this can be directly passed to <code>extractSigsSnv()</code> and <code>extractSigsIndel()</code>. Make sure to specify <code>output='contexts'</code> for <code>extractSigsSnv()</code>.</p>
-<pre class="r"><code>contexts_snv &lt;- extractSigsSnv(bed=bed_snv_indel, output='contexts', sample.name='PD3905')
-contexts_snv[1:5,,drop=F]</code></pre>
-<pre><code>##         PD3905
-## A[C&gt;A]A     89
-## A[C&gt;A]C     61
-## A[C&gt;A]G     14
-## A[C&gt;A]T     61
-## C[C&gt;A]A     91</code></pre>
-<pre class="r"><code>contexts_indel &lt;- extractSigsIndel(bed=bed_snv_indel, output='contexts', sample.name='PD3905')
-contexts_indel[1:5,,drop=F]</code></pre>
-<pre><code>##               PD3905
-## del.rep.len.1     24
-## del.rep.len.2      6
-## del.rep.len.3      4
-## del.rep.len.4      1
-## del.rep.len.5      0</code></pre>
+</div>
+<div id="running-chord-by-supplying-dataframes" class="section level2">
+<h2>2. Running CHORD by supplying dataframes</h2>
+<p>To run CHORD on non-standard vcfs or from other sources, we can create dataframes that <code>extractSigsChord()</code> accepts. The output can then be passed to <code>chordPredict()</code>.</p>
+<p>In this part of the tutorial, we will create the required dataframes from the example vcfs. This will thus also serve as a short demonstration on how one could parse vcfs in R. Furthermore, we will focus on one sample for simplicity’s sake.</p>
+<div id="snv-and-indel-dataframes" class="section level3">
+<h3>SNV and indel dataframes</h3>
+<p>For SNVs and indels, dataframe containing CHROM, POS, REF and ALT information (i.e. a bed file like format) is required. The column names of this dataframe can be anything; as long as the columns are in the aforementioned order.</p>
+<p>We can use <code>readVcfFields()</code> from the <code>mutSigExtractor</code> package to read a vcf into R as a dataframe.</p>
+<pre class="r"><code>df_snv_indel &lt;- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c('CHROM','POS','REF','ALT'))</code></pre>
+<p>Alternatively, we can specify the vcf columns we want by index.</p>
+<pre><code>df_snv_indel &lt;- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c(1,2,4,5))</code></pre>
+<p>The dataframe shown below is in the correct format as required by CHORD. This dataframe contains both SNVs and indels. This is not a problem as <code>extractSigsChord()</code></p>
+<pre class="r"><code>df_snv_indel[25:30,]</code></pre>
+<pre><code>##    CHROM      POS           REF ALT
+## 25     1 16145827             A   C
+## 26     1 16333830 GTGTGAAGGTGTC   G
+## 27     1 16492085             G   C
+## 28     1 17890303             C   G
+## 29     1 18877885             G   A
+## 30     1 18919776             T   C</code></pre>
 </div>
 <div id="extracting-sv-contexts" class="section level3">
 <h3>Extracting SV contexts</h3>
-<p><code>extractSigsSv()</code> requires a dataframe with SV type (values must be one of the following: DEL, DUP, INV, TRA) and SV length information. Again, the column names of this dataframe can be anything; as long as the columns are in the aforementioned order.</p>
-<p>Again, <code>readVcfFields()</code> can be used to read the vcf. Manta reports SVTYPE and SVLEN in the INFO field, so only this field needs to be extracted from the vcf.</p>
+<p>For SVs, a dataframe is required with SV type (values must be one of the following: DEL, DUP, INV, TRA) and SV length information. Again, the column names of this dataframe can be anything; as long as the columns are in the aforementioned order.</p>
+<p>Again, <code>readVcfFields()</code> can be used to read the vcf. The example vcfs have been produced by Manta, which reports SVTYPE and SVLEN in the INFO field, so only this field needs to be extracted from the vcf.</p>
 <pre class="r"><code>vcf_sv &lt;- readVcfFields('vcf/PD3905_sv.vcf.gz', fields='INFO')
 head(vcf_sv)</code></pre>
 <pre><code>##                                                                                                                                                    INFO
@@ -1731,7 +1740,7 @@ vcf_sv_info[1:2]</code></pre>
 ## [5] &quot;Donor_ID=DO224557&quot;         &quot;project=BRCA-EU&quot;          
 ## [7] &quot;icgc_sample_ID=PD3905a&quot;    &quot;icgc_specimen_ID=SA569900&quot;
 ## [9] &quot;assembly_version=NA&quot;</code></pre>
-<p>Extract the SVTYPE and SVLEN data, and put it in the dataframe format that <code>extractSigsSv()</code> accepts.</p>
+<p>Extract the SVTYPE and SVLEN data, and put it in the correct dataframe format.</p>
 <pre class="r"><code>sv_type &lt;- sapply(vcf_sv_info,`[`,2) ## Select the 2nd object from each INFO entry
 sv_type &lt;- gsub('SVTYPE=','',sv_type) ## Remove the 'SVTYPE=' prefix
 
@@ -1748,27 +1757,26 @@ head(df_sv)</code></pre>
 ## 4     DUP      1703
 ## 5     DEL      1789
 ## 6     DEL     49256</code></pre>
-<p>You may notice that translocations (TRA) have an SV length, which doesn’t really make sense. This is no problem since <code>extractSigsSv()</code> discards SV length data for translocations.</p>
-<p>We can then pass <code>df_sv</code> to <code>extractSigsSv()</code>. Again, make sure to specify <code>output='contexts'</code>.</p>
-<pre class="r"><code>contexts_sv &lt;- extractSigsSv(df=df_sv, output='contexts', sample.name='PD3905')
-head(contexts_sv)</code></pre>
-<pre><code>##                  PD3905
-## DEL_0e00_1e03_bp      0
-## DEL_1e03_1e04_bp      8
-## DEL_1e04_1e05_bp      8
-## DEL_1e05_1e06_bp      1
-## DEL_1e06_1e07_bp      2
-## DEL_1e07_Inf_bp       4</code></pre>
-<p>Merge the contexts into a single matrix. Since <code>chordPredict()</code> expects a matrix with samples as rows and contexts as columns, we also need to transpose the matrix.</p>
-<pre class="r"><code>contexts &lt;- rbind(contexts_snv,contexts_indel,contexts_sv)
-contexts &lt;- t(contexts)
-
-contexts[,1:5,drop=F]</code></pre>
-<pre><code>##        A[C&gt;A]A A[C&gt;A]C A[C&gt;A]G A[C&gt;A]T C[C&gt;A]A
-## PD3905      89      61      14      61      91</code></pre>
+<p>You may notice that translocations (TRA) have an SV length, which doesn’t really make sense. This is no problem since SV length info is discarded for translocations.</p>
 </div>
-<div id="predicting-hrd" class="section level3">
+<div id="predicting-hrd-1" class="section level3">
 <h3>Predicting HRD</h3>
+<p>Extract the relevant mutation contexts from the variant data.</p>
+<pre class="r"><code>contexts &lt;- extractSigsChord(
+  df.snv = df_snv_indel,
+  df.sv = df_sv,
+  sample.name='PD3905'
+)</code></pre>
+<p>Below we can see what a part of the context matrix looks like.</p>
+<pre class="r"><code>contexts[,c(1:4, 97:104, 127:131),drop=F]</code></pre>
+<pre><code>##        A[C&gt;A]A A[C&gt;A]C A[C&gt;A]G A[C&gt;A]T del.rep.len.1 del.rep.len.2
+## PD3905      89      61      14      61            24             6
+##        del.rep.len.3 del.rep.len.4 del.rep.len.5 ins.rep.len.1 ins.rep.len.2
+## PD3905             4             1             0            19             1
+##        ins.rep.len.3 DEL_0e00_1e03_bp DEL_1e03_1e04_bp DEL_1e04_1e05_bp
+## PD3905             0                0                8                8
+##        DEL_1e05_1e06_bp DEL_1e06_1e07_bp
+## PD3905                1                2</code></pre>
 <p>Lastly, make the HRD prediction.</p>
 <pre class="r"><code>pred &lt;- chordPredict(contexts)
 
@@ -1797,6 +1805,49 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
