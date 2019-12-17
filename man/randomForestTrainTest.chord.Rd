@@ -4,12 +4,23 @@
 \alias{randomForestTrainTest.chord}
 \title{Random forest training and testing procedure}
 \usage{
-randomForestTrainTest.chord(train, test = NULL,
-  colname.response = "response", do.feature.prefilter = T,
-  feature.prefilter.p.value.n = 1, feature.prefilter.p.value.p = 1,
-  do.boruta = T, do.balance = T, balance.aucpr.tol = NULL,
-  inner.cv.repeats = 10, train.test.seed = NULL,
-  train.test.verbose = T, export.dir = NULL, return.output = F, ...)
+randomForestTrainTest.chord(
+  train,
+  test = NULL,
+  colname.response = "response",
+  do.feature.prefilter = T,
+  feature.prefilter.p.value.n = 1,
+  feature.prefilter.p.value.p = 1,
+  do.boruta = T,
+  do.balance = T,
+  balance.aucpr.tol = NULL,
+  inner.cv.repeats = 10,
+  train.test.seed = NULL,
+  train.test.verbose = T,
+  export.dir = NULL,
+  return.output = F,
+  ...
+)
 }
 \arguments{
 \item{train}{Training set}
