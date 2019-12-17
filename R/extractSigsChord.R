@@ -5,70 +5,106 @@
 #' compatible input for CHORD
 #' 
 #' @param vcf.snv Path to the vcf file containing SNVs
-#' @param vcf.indel Path to the vcf file containing indels. By default vcf.indel==vcf.snv
+#' @param vcf.indel Path to the vcf file containing indels. By default vcf.indel=vcf.snv
 #' @param vcf.sv Path to the vcf file containing SVs
+#' @param df.snv A dataframe containing the columns: chrom, pos, ref, alt.
+#' @param df.indel A dataframe containing the columns: chrom, pos, ref, alt.
+#' @param df.sv A dataframe with the columns: sv_type, sv_len. sv_type can be DEL, DUP, INV, TRA, BND.
 #' @param sample.name The name of the sample as a character. Defaults to 'sample' if none is 
 #' provided.
 #' @param sv.caller SV vcfs are not standardized and therefore need to be parsed differently
 #' depending on the caller. Currently supports 'manta' or 'gridss'.
+#' @param vcf.filters A list of in the form list(snv=character(),indel=character(),sv=character()) 
+#' indicated which variants to keep, corresponding to the values in the vcf FILTER column. NA can be
+#' specified for each list item to ignore filtering of a vcf.
 #' @param output.path If a path is specified, the output is written to this path.
+#' @param ref.genome A character naming the BSgenome reference genome. Default is
+#' "BSgenome.Hsapiens.UCSC.hg19". If another reference genome is indicated, it will also need to be
+#' installed.
 #' @param verbose Whether to print progress messages
 #'
 #' @return A 1-row data frame containing the mutational signature contributions
 #' @export
 #'
 extractSigsChord <- function(
-  vcf.snv, 
-  vcf.indel=vcf.snv, 
-  vcf.sv,
+  vcf.snv=NULL, vcf.indel=vcf.snv, vcf.sv=NULL,
+  df.snv=NULL, df.indel=df.snv, df.sv=NULL,
   sample.name='sample',
-  vcf.filters=c(snv=NA,indel=NA,sv=NA),
-  sv.caller='gridss', output.path=NULL, verbose=F,
-  ref.genome=DEFAULT_GENOME
+  vcf.filters=list(snv=NA,indel=NA,sv=NA),
+  sv.caller='gridss', output.path=NULL, ref.genome=DEFAULT_GENOME, verbose=F
 ){
   
-  ######### Load vcfs #########
+  if(is.null(vcf.snv) & is.null(df.snv)){
+    stop('Either vcf.snv or df.snv inputs are required')
+  }
+  
+  if(is.null(vcf.indel) & is.null(df.indel)){
+    stop('Either vcf.indel or df.indel inputs are required')
+  }
+  
+  if(is.null(vcf.snv) & is.null(df.snv)){
+    stop('Either vcf.sv or df.sv inputs are required')
+  }
+  
+  ######### Loading vcfs and/or dataframe inputs #########
   if(verbose){ message('\n#====== Loading variants from vcfs ======#') }
   
   variants <- list()
   
   if(verbose){ message('\n## SNVs') }
-  variants$snv <- variantsFromVcf(
-    vcf.snv, mode='snv_indel', 
-    vcf.filter=vcf.filters['snv'],
-    ref.genome=ref.genome,
-    verbose=verbose
-  )
-  
-  if(verbose){ message('\n## Indels') }
-  if(vcf.indel==vcf.snv){
-    if(verbose){ message('vcf file is the same for both SNVs and indels. Skipping reading vcf for indels') }
-    variants$indel <- variants$snv
-  } else {
-    variants$indel <- variantsFromVcf(
-      vcf.indel, mode='snv_indel', 
-      vcf.filter=vcf.filters['indel'], 
+  if(!is.null(vcf.snv)){
+    variants$snv <- variantsFromVcf(
+      vcf.snv, mode='snv_indel', 
+      vcf.filter=vcf.filters$snv,
       ref.genome=ref.genome,
       verbose=verbose
     )
+  } else {
+    variants$snv <- df.snv
+  }
+
+  if(verbose){ message('\n## Indels') }
+  if(!is.null(vcf.indel)){
+    if(vcf.indel==vcf.snv){
+      if(verbose){ message('vcf file is the same for both SNVs and indels. Skipping reading vcf for indels') }
+      variants$indel <- variants$snv
+    } else {
+      variants$indel <- variantsFromVcf(
+        vcf.indel, mode='snv_indel', 
+        vcf.filter=vcf.filters$indel, 
+        ref.genome=ref.genome,
+        verbose=verbose
+      )
+    }
+  } else {
+    if(identical(df.indel,df.snv)){
+      variants$indel <- df.snv
+    } else {
+      variants$indel <- df.indel
+    }
+    
   }
   
   if(verbose){ message('\n## SVs') }
-  variants$sv <- variantsFromVcf(
-    vcf.sv, mode='sv', 
-    vcf.filter=vcf.filters['sv'], 
-    sv.caller=sv.caller
-  )
+  if(!is.null(vcf.sv)){
+    variants$sv <- variantsFromVcf(
+      vcf.sv, mode='sv', 
+      vcf.filter=vcf.filters$sv, 
+      sv.caller=sv.caller
+    )
+  } else {
+    variants$sv <- df.sv
+  }
   
   ######### Count contexts #########
   if(verbose){ message('\n#====== Counting mutation contexts ======#') }
   sigs <- list()
   
   if(verbose){ message('\n## Single base substitutions') }
-  sigs$snv <- extractSigsSnv(bed=variants$snv, output='contexts', ref.genome=ref.genome, verbose=verbose)
+  sigs$snv <- extractSigsSnv(df=variants$snv, output='contexts', ref.genome=ref.genome, verbose=verbose)
   
   if(verbose){ message('\n## Indel contexts (types x lengths)') }
-  sigs$indel <- extractSigsIndel(bed=variants$indel, ref.genome=ref.genome, verbose=verbose)
+  sigs$indel <- extractSigsIndel(df=variants$indel, ref.genome=ref.genome, verbose=verbose)
   
   if(verbose){ message('\n## SV contexts (types x lengths)') }
   sigs$sv <- extractSigsSv(
