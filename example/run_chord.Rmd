@@ -21,11 +21,11 @@ duplications are used to distinguish BRCA1-type HRD from BRCA2-type HRD.
 ### Vcfs as input
 CHORD can be supplied with vcf files containing **somatic (no germline)** SNVs, indels,
 and SVs per sample. The first step is to extract the mutation contexts required by CHORD:
-```
+```{r eval=FALSE, error=FALSE}
 contexts <- extractSigsChord(
-  vcf.snv = /path/to/vcf/with/snvs/,
-  vcf.indel = /path/to/vcf/with/snvs/,
-  vcf.sv = /path/to/vcf/with/svs/,
+  vcf.snv = '/path/to/vcf/with/snvs/',
+  vcf.indel = '/path/to/vcf/with/snvs/',
+  vcf.sv = '/path/to/vcf/with/svs/',
   sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta'
 )
 ```
@@ -39,9 +39,9 @@ supply this preprocessed data to CHORD).
 * For SNVs and indels, a dataframe with the columns: chrom, pos, ref, alt
 * For SVs, a dataframe with the columns: sv_type, sv_len. For sv_type, values must be DEL, DUP, INV, TRA
 
-Note that the column names themselves do not matter. As long as the columns are in the 
+Note that the column names themselves do not matter, as long as the columns are in the 
 aforementioned order.
-```
+```{r eval=FALSE, error=FALSE}
 contexts <- extractSigsChord(
   df.snv = bed_file_like_dataframe_with_snvs,
   df.indel = bed_file_like_dataframe_with_indels,
@@ -52,27 +52,26 @@ contexts <- extractSigsChord(
 ### Inputs are flexible
 Often, SNV and indels are reported in the same vcfs. In such cases, the vcf path can be specified to
 the ```vcf.snv``` argument (```vcf.indel``` can be left out).
-```
+```{r eval=FALSE, error=FALSE}
 contexts <- extractSigsChord(
-  vcf.snv = /path/to/vcf/with/snvs_and_indels/,
-  vcf.sv = /path/to/vcf/with/svs/,
+  vcf.snv = '/path/to/vcf/with/snvs_and_indels/',
+  vcf.sv = '/path/to/vcf/with/svs/',
   sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta'
 )
 ```
 
-The vcf.* and df.* arguments can be mixed.
-```
+The vcf.* and df.* arguments can be mixed. This is especially useful in the case of SV vcfs, since
+it is possible that you will need to parse these yourself.
+```{r eval=FALSE, error=FALSE}
 contexts <- extractSigsChord(
-  vcf.snv = /path/to/vcf/with/snvs/,
-  vcf.indel = /path/to/vcf/with/snvs/,
+  vcf.snv = '/path/to/vcf/with/snvs/',
+  vcf.indel = '/path/to/vcf/with/snvs/',
   df.sv = dataframe_with_svtype_and_sv_len
 )
 ```
-This is especially useful in the case of SV vcfs, since it is possible that you will need to parse 
-these yourself.
 
 ### Predicting HRD
-Once we have the mutation contexts, a prediction can be made
+Once we have the mutation contexts, a prediction can be made.
 ```
 chordPredict(contexts)
 ```
@@ -122,7 +121,7 @@ Vcfs can either be in plain text format (.vcf) or compressed (.gz).
 
 SNVs and indels are often stored in the same vcf (as is the case with the example vcfs). CHORD
 therefore accepts such vcfs as input; SNVs and indels are automatically split up. However, it is
-also possible to specify separately SNV and indel vcfs (by specifying the paths separate to
+also possible to specify the SNV and indel vcfs separately (by specifying the paths separately to
 ```vcf.snv``` and ```vcf.indel``` to ```extractSigsChord()```; see below).
 
 #### Extracting mutation contexts
@@ -162,10 +161,10 @@ and GRIDSS (```sv.caller='manta'``` or ```sv.caller='gridss'```).
 
 We can then merge the contexts into a matrix.
 ```{r message=FALSE, warning=FALSE}
-## Get the paths to the contexts txts
+## Get the paths of the contexts txt files
 context_files <- list.files(contexts_dir, full.names=T)
 
-## Read the txts into R
+## Read the txt files into R
 l_contexts <- lapply(context_files, function(i){
   read.delim(i, check.names=F)
 })
@@ -216,7 +215,7 @@ accurately determine HRD subtype. Thus, while this sample had sufficient number 
 determine HRD, the number of SVs was not sufficient, and therefore ```hrd_type``` is NA.
 
 The user may of course ignore these QC warnings and proceed with using the raw probabilities 
-outputted by CHORD (```p_hrd``` and/or ```p_BRCA1```/```pBRCA2```)
+outputted by CHORD (```p_hrd``` and/or ```p_BRCA1```/```pBRCA2```).
 
 
 ## 2. Running CHORD by supplying dataframes
@@ -228,7 +227,7 @@ will thus also serve as a short demonstration on how one could parse vcfs in R. 
 focus on one sample for simplicity's sake.
 
 ### SNV and indel dataframes
-For SNVs and indels, dataframe containing CHROM, POS, REF and ALT information (i.e. a bed file like 
+For SNVs and indels, a dataframe containing CHROM, POS, REF and ALT information (i.e. a bed file like 
 format) is required. The column names of this dataframe can be anything; as long as the columns are 
 in the aforementioned order. 
 
@@ -239,7 +238,7 @@ df_snv_indel <- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c('CHROM','P
 ```
 
 Alternatively, we can specify the vcf columns we want by index.
-```
+```{r eval=FALSE, error=FALSE}
 df_snv_indel <- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c(1,2,4,5))
 ```
 
