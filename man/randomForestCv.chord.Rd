@@ -4,8 +4,15 @@
 \alias{randomForestCv.chord}
 \title{Cross-validation wrapper for randomForest.chord()}
 \usage{
-randomForestCv.chord(df, colname.response = "response", cv.folds = 10,
-  cv.repeats = 1, cv.verbose = T, cv.keep.forests = T, ...)
+randomForestCv.chord(
+  df,
+  colname.response = "response",
+  cv.folds = 10,
+  cv.repeats = 1,
+  cv.verbose = T,
+  cv.keep.forests = T,
+  ...
+)
 }
 \arguments{
 \item{df}{A dataframe containing the features and a response (class label) column}

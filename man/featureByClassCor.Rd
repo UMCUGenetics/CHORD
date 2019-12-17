@@ -4,9 +4,15 @@
 \alias{featureByClassCor}
 \title{T-test between positive vs. negative class}
 \usage{
-featureByClassCor(df, feature, colname.response = "response",
-  p.value.p = 0.01, p.value.n = 0.01, p.responses = c("BRCA1",
-  "BRCA2"), n.response = "none")
+featureByClassCor(
+  df,
+  feature,
+  colname.response = "response",
+  p.value.p = 0.01,
+  p.value.n = 0.01,
+  p.responses = c("BRCA1", "BRCA2"),
+  n.response = "none"
+)
 }
 \arguments{
 \item{df}{A dataframe containing the features and a response (class label) column}

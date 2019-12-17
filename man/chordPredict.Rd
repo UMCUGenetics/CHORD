@@ -4,8 +4,13 @@
 \alias{chordPredict}
 \title{Predict the probability of homogolous recombination deficiency using mutational signatures}
 \usage{
-chordPredict(features, rf.model = CHORD, hrd.cutoff = 0.5,
-  show.features = F, verbose = T)
+chordPredict(
+  features,
+  rf.model = CHORD,
+  hrd.cutoff = 0.5,
+  show.features = F,
+  verbose = T
+)
 }
 \arguments{
 \item{features}{The output of extractSigsChord(), which is a dataframe containing the SNV, indel and
