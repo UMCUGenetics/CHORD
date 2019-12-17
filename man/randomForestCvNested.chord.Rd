@@ -4,10 +4,15 @@
 \alias{randomForestCvNested.chord}
 \title{Outer cross-validation wrapper for  the training and testing procedure}
 \usage{
-randomForestCvNested.chord(df = hmf_training_set,
-  colname.response = "response", k.outer = 10,
-  parent.export.dir = NULL, rfcv.nested.seed = NULL,
-  rfcv.nested.verbose = T, ...)
+randomForestCvNested.chord(
+  df = hmf_training_set,
+  colname.response = "response",
+  k.outer = 10,
+  parent.export.dir = NULL,
+  rfcv.nested.seed = NULL,
+  rfcv.nested.verbose = T,
+  ...
+)
 }
 \arguments{
 \item{df}{A dataframe containing the features and a response (class label) column}
