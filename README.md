@@ -15,9 +15,8 @@ as the dependencies for both packages.
 ```
 ## Bioconductor packages required by mutSigExtractor
 install.packages('BiocManager')
-BiocManager::install(
-	c('GenomicRanges','VariantAnnotation','BSgenome','BSgenome.Hsapiens.UCSC.hg19')
-)
+BiocManager::install('BSgenome') ## Install genome parser
+BiocManager::install('BSgenome.Hsapiens.UCSC.hg19') ## Install relevant genome
 
 ## randomForest is required by CHORD
 install.packages('randomForest')
@@ -31,15 +30,6 @@ install_github('https://github.com/luannnguyen/CHORD/')
 ```
 
 ## Usage and tutorial
-Ideally, the inputs for using CHORD are vcf files containing **somatic (no germline)** SNVs, indels,
-and SVs per sample. ```extractSigsChord()``` is used to extract the relevant features (mutation
-contexts) which are then passed to ```chordPredict()``` to make the HRD prediction.
-
-However, it is also possible to run CHORD on non-standard vcfs or from other sources. To do this we
-can create dataframes that ```extractSigsSnv()```, ```extractSigsIndel()```, and
-```extractSigsSv()``` accept (functions from the ```mutSigExtractor``` package). The
-output from these functions can then be gathered and passed to ```chordPredict()```.
-
 To get started with CHORD, please see the [tutorial](http://htmlpreview.github.io/?https://github.com/luannnguyen/CHORD/blob/master/example/run_chord.html).
 
 
