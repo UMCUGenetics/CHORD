@@ -196,7 +196,7 @@ below).
 ### Extracting mutation contexts
 
 Create a directory to write all subsequent output. **Note**: the output
-from this tutorial exists in the `/output/` directory by default. Delete
+from this tutorial exists in the `output/` directory by default. Delete
 this directory to create new output files.
 
 ``` r
