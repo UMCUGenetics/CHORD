@@ -1,11 +1,6 @@
 ---
 title: "Predicting homologous recombination deficiency using CHORD"
-author: "Luan N. Nguyen"
-output: 
-  html_document:
-    toc: true
-    toc_float: true
-    keep_md: true
+output: rmarkdown::github_document
 ---
 
 ## Introduction
