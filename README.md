@@ -383,16 +383,15 @@ field, so only this field needs to be extracted from the vcf.
 
 ``` r
 vcf_sv <- readVcfFields('vcf/PD3905_sv.vcf.gz', fields='INFO')
-head(vcf_sv)
+print(vcf_sv[1:5,,drop=F], right=F)
 ```
 
-    ##                                                                                                                                                    INFO
+    ##   INFO                                                                                                                                                 
     ## 1 SVLEN=-13737754;SVTYPE=TRA;CHR2=3;END=10206978;Donor_ID=DO224557;project=BRCA-EU;icgc_sample_ID=PD3905a;icgc_specimen_ID=SA569900;assembly_version=NA
-    ## 2      SVLEN=1696;SVTYPE=DEL;CHR2=1;END=54899207;Donor_ID=DO224557;project=BRCA-EU;icgc_sample_ID=PD3905a;icgc_specimen_ID=SA569900;assembly_version=NA
-    ## 3     SVLEN=22644;SVTYPE=DEL;CHR2=1;END=72263583;Donor_ID=DO224557;project=BRCA-EU;icgc_sample_ID=PD3905a;icgc_specimen_ID=SA569900;assembly_version=NA
-    ## 4      SVLEN=1703;SVTYPE=DUP;CHR2=1;END=75618395;Donor_ID=DO224557;project=BRCA-EU;icgc_sample_ID=PD3905a;icgc_specimen_ID=SA569900;assembly_version=NA
-    ## 5      SVLEN=1789;SVTYPE=DEL;CHR2=1;END=75619297;Donor_ID=DO224557;project=BRCA-EU;icgc_sample_ID=PD3905a;icgc_specimen_ID=SA569900;assembly_version=NA
-    ## 6     SVLEN=49256;SVTYPE=DEL;CHR2=1;END=86637842;Donor_ID=DO224557;project=BRCA-EU;icgc_sample_ID=PD3905a;icgc_specimen_ID=SA569900;assembly_version=NA
+    ## 2 SVLEN=1696;SVTYPE=DEL;CHR2=1;END=54899207;Donor_ID=DO224557;project=BRCA-EU;icgc_sample_ID=PD3905a;icgc_specimen_ID=SA569900;assembly_version=NA     
+    ## 3 SVLEN=22644;SVTYPE=DEL;CHR2=1;END=72263583;Donor_ID=DO224557;project=BRCA-EU;icgc_sample_ID=PD3905a;icgc_specimen_ID=SA569900;assembly_version=NA    
+    ## 4 SVLEN=1703;SVTYPE=DUP;CHR2=1;END=75618395;Donor_ID=DO224557;project=BRCA-EU;icgc_sample_ID=PD3905a;icgc_specimen_ID=SA569900;assembly_version=NA     
+    ## 5 SVLEN=1789;SVTYPE=DEL;CHR2=1;END=75619297;Donor_ID=DO224557;project=BRCA-EU;icgc_sample_ID=PD3905a;icgc_specimen_ID=SA569900;assembly_version=NA
 
 Then, split the data each INFO entry, which are separated by `;`.
 
@@ -474,7 +473,6 @@ Lastly, make the HRD prediction.
 
 ``` r
 pred <- chordPredict(contexts)
-
 pred
 ```
 
