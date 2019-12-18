@@ -1,8 +1,6 @@
 CHORD: Classifier of HOmologous Recombination Deficiency
 ================
 
-## Description
-
 CHORD is a random forest model that uses the relative counts of somatic
 mutation contexts to predict homologous recombination deficiency (HRD).
 The primary contexts used by CHORD are deletions with flanking
@@ -10,7 +8,7 @@ microhomology and 1-100kb structural duplications. Additionally, 1-100kb
 structural duplications are used to distinguish BRCA1-type HRD from
 BRCA2-type HRD.
 
-## Installation
+# Installation
 
 CHORD is itself an R package. Before using CHORD, some other R packages
 will also need to be installed, with the main one being mutSigExtractor,
@@ -35,13 +33,13 @@ install_github('https://github.com/luannnguyen/mutSigExtractor')
 install_github('https://github.com/luannnguyen/CHORD/')
 ```
 
-## Quick start
+# Quick start
 
-### Vcfs as input
+## Vcfs as input
 
 CHORD can be supplied with vcf files containing **somatic (no
 germline)** SNVs, indels, and SVs per sample. The first step is to
-extract the mutation contexts required by CHORD:
+extract the mutation contexts required by CHORD.
 
 ``` r
 contexts <- extractSigsChord(
@@ -55,7 +53,7 @@ contexts <- extractSigsChord(
 Note that there is no real standard for SV vcfs. However, parsing vcfs
 produced by Manta or GRIDSS has been built into CHORD.
 
-### Dataframes as input
+## Dataframes as input
 
 Alternatively, dataframes can be used as input (handy if you want to
 parse the vcfs yourself and supply this preprocessed data to CHORD).
@@ -65,8 +63,8 @@ parse the vcfs yourself and supply this preprocessed data to CHORD).
   - For SVs, a dataframe with the columns: sv\_type, sv\_len. For
     sv\_type, values must be DEL, DUP, INV, TRA
 
-Note that the column names themselves do not matter, as long as the
-columns are in the aforementioned order.
+The column names themselves do not matter, as long as the columns are in
+the aforementioned order.
 
 ``` r
 contexts <- extractSigsChord(
@@ -76,7 +74,7 @@ contexts <- extractSigsChord(
 )
 ```
 
-### Inputs are flexible
+## Inputs are flexible
 
 Often, SNV and indels are reported in the same vcfs. In such cases, the
 vcf path can be specified to the `vcf.snv` argument (`vcf.indel` can be
@@ -106,9 +104,10 @@ A different reference genome than the default can be used. Genomes
 should be BSgenomes.
 
 ``` r
-## Make sure to install and load the desired first
-install.packages('BiocManager')
+## Make sure to install and load the desired ref genome first
 ref_genome <- 'BSgenome.Hsapiens.UCSC.hg38'
+
+install.packages('BiocManager')
 BiocManager::install(ref_genome)
 library(ref_genome)
 
@@ -122,15 +121,13 @@ contexts <- extractSigsChord(
 )
 ```
 
-### Predicting HRD
+## Predicting HRD
 
 Once we have the mutation contexts, a prediction can be made.
 
     chordPredict(contexts)
 
-For more details on how to use CHORD, please see the below tutorial.
-
-## Tutorial
+# Tutorial
 
 This tutorial will demonstrate how HRD prediction can be performed
 locally. Somatic vcfs from a few primary tumors from the 560 breast
@@ -143,21 +140,22 @@ In part 1, we will use the vcfs directly as input for CHORD.
 
 Part 2 of this tutorial will provide a demonstration of how we can parse
 the vcfs into dataframes that CHORD accepts. This is particularly useful
-if you may have non-standard vcfs, as is often the case with SV vcfs. Of
+if you have non-standard vcfs, as is often the case with SV vcfs. Of
 course, it is possible to produce the required input dataframes from any
 data source, and not just vcfs; it only requires a bit of data wrangling
 :).
 
-To run the example, set the working directory to the `example/`
-directory in the CHORD package.
+To run the example, clone/download the git repository to your own
+computer (e.g. to /Users/lnguyen/Desktop/), and set the working
+directory to the `example/` directory in the CHORD package.
 
 ``` r
-setwd('./CHORD/example/')
+setwd('/Users/lnguyen/Desktop/CHORD/example/')
 ```
 
-### 1\. Running CHORD on vcfs
+## 1\. Running CHORD on vcfs
 
-#### Loading vcfs into R
+### Loading vcfs into R
 
 We will first create a dataframe to store the vcf paths as well as
 assign them sample names.
@@ -195,17 +193,15 @@ specify the SNV and indel vcfs separately (by specifying the paths
 separately to `vcf.snv` and `vcf.indel` to `extractSigsChord()`; see
 below).
 
-#### Extracting mutation contexts
+### Extracting mutation contexts
 
-Create a directory to write all subsequent output.
+Create a directory to write all subsequent output. **Note**: the output
+from this tutorial exists in the `/output/` directory by default. Delete
+this directory to create new output files.
 
 ``` r
 dir.create('output/')
 ```
-
-***Note***: the output from this tutorial exists in the
-`example/output/` directory by default. Delete this directory to create
-new output files.
 
 Extract the features that are used as input for CHORD. With the example
 data, it should take about 30s to run.
@@ -268,7 +264,7 @@ merged_contexts[,1:5]
     ## PD4116      123     136      15     142     164
     ## PD7344       10       9       1       6      11
 
-#### Predicting HRD and interpreting CHORD’s output
+### Predicting HRD and interpreting CHORD’s output
 
 Once we have the context matrix ready, we can use it for predicting HRD.
 
@@ -286,9 +282,9 @@ pred
     ## 4  PD4116  0.102   0.106   0.792 0.898           pass   TRUE BRCA2_type
     ## 5  PD7344  0.998   0.000   0.002 0.002 low_indel_load     NA       <NA>
 
-#### Interpreting the output
+### Interpreting the output
 
-##### Main output
+#### Main output
 
 CHORD outputs the probability of:
 
@@ -304,7 +300,7 @@ Note that `p_hrd` = `p_BRCA1` + `p_BRCA2`. Furthermore, `p_none` +
 threshold)**. If this is TRUE, then `hrd_type` will tell us if the
 sample has BRCA1-type HRD or BRCA2-type HRD (=max(`p_BRCA1`,`p_BRCA2`)).
 
-##### QC checks
+#### QC checks
 
 Under `qc`, we can see that PD7344 has `low_indel_load`. CHORD requires
 \>=50 indels to accurately determine whether a sample is HRD. PD7344
@@ -320,7 +316,7 @@ The user may of course ignore these QC warnings and proceed with using
 the raw probabilities outputted by CHORD (`p_hrd` and/or
 `p_BRCA1`/`pBRCA2`).
 
-### 2\. Running CHORD from dataframes
+## 2\. Running CHORD from dataframes
 
 To run CHORD on non-standard vcfs or from other sources, we can create
 dataframes that `extractSigsChord()` accepts. The output can then be
@@ -331,7 +327,7 @@ from the example vcfs. This will thus also serve as a short
 demonstration on how one could parse vcfs in R. Furthermore, we will
 focus on one sample for simplicity’s sake.
 
-#### SNV and indel dataframes
+### SNV and indel dataframes
 
 For SNVs and indels, a dataframe containing CHROM, POS, REF and ALT
 information (i.e. a bed file like format) is required. The column names
@@ -370,7 +366,7 @@ df_snv_indel[25:30,]
     ## 29     1 18877885             G   A
     ## 30     1 18919776             T   C
 
-#### Extracting SV contexts
+### Extracting SV contexts
 
 For SVs, a dataframe is required with SV type (values must be one of the
 following: DEL, DUP, INV, TRA) and SV length information. Again, the
@@ -441,7 +437,7 @@ You may notice that translocations (TRA) have an SV length, which
 doesn’t really make sense. This is no problem since SV length info is
 discarded for translocations.
 
-#### Predicting HRD
+### Predicting HRD
 
 Extract the relevant mutation contexts from the variant data.
 
