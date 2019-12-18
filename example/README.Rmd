@@ -1,9 +1,9 @@
 ---
-title: "Predicting homologous recombination deficiency using CHORD"
+title: "CHORD: Classifier of HOmologous Recombination Deficiency"
 output: rmarkdown::github_document
 ---
 
-## Introduction
+## Description
 CHORD is a random forest model that uses the relative counts of somatic mutation contexts to predict
 homologous recombination deficiency (HRD). The primary contexts used by CHORD are deletions with
 flanking microhomology and 1-100kb structural duplications. Additionally, 1-100kb structural
