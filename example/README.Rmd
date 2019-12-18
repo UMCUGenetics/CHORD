@@ -5,17 +5,37 @@ output:
   html_document:
     toc: true
     toc_float: true
+    keep_md: true
 ---
-
-```{r message=FALSE, warning=FALSE, results="hide", echo=FALSE}
-setwd('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/')
-```
 
 ## Introduction
 CHORD is a random forest model that uses the relative counts of somatic mutation contexts to predict
 homologous recombination deficiency (HRD). The primary contexts used by CHORD are deletions with
 flanking microhomology and 1-100kb structural duplications. Additionally, 1-100kb structural
 duplications are used to distinguish BRCA1-type HRD from BRCA2-type HRD.
+
+## Installation
+CHORD is itself an R package. Before using CHORD, some other R packages will also need to be 
+installed, with the main one being mutSigExtractor, which is required for extracting the mutation 
+contexts that CHORD uses. The below code can be used to install CHORD and mutSigExtractor, as well 
+as the dependencies for both packages.
+
+```{r eval=FALSE, error=FALSE}
+## Bioconductor packages required by mutSigExtractor
+install.packages('BiocManager')
+BiocManager::install('BSgenome') ## Install genome parser
+BiocManager::install('BSgenome.Hsapiens.UCSC.hg19') ## Install relevant genome
+
+## randomForest is required by CHORD
+install.packages('randomForest')
+
+## Install CHORD and mutSigExtractor directly from github using devtools
+install.packages("devtools")
+library(devtools)
+
+install_github('https://github.com/luannnguyen/mutSigExtractor')
+install_github('https://github.com/luannnguyen/CHORD/')
+```
 
 ## Quick start
 ### Vcfs as input
@@ -109,6 +129,10 @@ Part 2 of this tutorial will provide a demonstration of how we can parse the vcf
 that CHORD accepts. This is particularly useful if you may have non-standard vcfs, as is often the 
 case with SV vcfs. Of course, it is possible to produce the required input dataframes from
 any data source, and not just vcfs; it only requires a bit of data wrangling :).
+
+```{r message=FALSE, warning=FALSE, results="hide", echo=FALSE}
+setwd('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/')
+```
 
 To run the example, set the working directory to the ```example/``` directory in the CHORD package.
 ```{r eval=FALSE}
@@ -237,7 +261,7 @@ The user may of course ignore these QC warnings and proceed with using the raw p
 outputted by CHORD (```p_hrd``` and/or ```p_BRCA1```/```pBRCA2```).
 
 
-## 2. Running CHORD by supplying dataframes
+### 2. Running CHORD from dataframes
 To run CHORD on non-standard vcfs or from other sources, we can create dataframes that 
 ```extractSigsChord()``` accepts. The output can then be passed to ```chordPredict()```.
 
@@ -245,7 +269,7 @@ In this part of the tutorial, we will create the required dataframes from the ex
 will thus also serve as a short demonstration on how one could parse vcfs in R. Furthermore, we will 
 focus on one sample for simplicity's sake.
 
-### SNV and indel dataframes
+#### SNV and indel dataframes
 For SNVs and indels, a dataframe containing CHROM, POS, REF and ALT information (i.e. a bed file like 
 format) is required. The column names of this dataframe can be anything; as long as the columns are 
 in the aforementioned order. 
@@ -269,7 +293,7 @@ df_snv_indel[25:30,]
 ```
 
 
-### Extracting SV contexts
+#### Extracting SV contexts
 For SVs, a dataframe is required with SV type (values must be one of the following: DEL,
 DUP, INV, TRA) and SV length information. Again, the column names of this dataframe can be anything;
 as long as the columns are in the aforementioned order.
@@ -305,7 +329,7 @@ head(df_sv)
 You may notice that translocations (TRA) have an SV length, which doesn't really make sense. This is
 no problem since SV length info is discarded for translocations.
 
-### Predicting HRD
+#### Predicting HRD
 Extract the relevant mutation contexts from the variant data.
 ```{r message=FALSE, warning=FALSE}
 contexts <- extractSigsChord(
