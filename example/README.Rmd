@@ -299,7 +299,7 @@ from the vcf.
 
 ```{r message=FALSE, warning=FALSE}
 vcf_sv <- readVcfFields('vcf/PD3905_sv.vcf.gz', fields='INFO')
-head(vcf_sv)
+print(vcf_sv[1:5,,drop=F], right=F)
 ```
 
 Then, split the data each INFO entry, which are separated by ```;```.
@@ -343,7 +343,6 @@ contexts[,c(1:4, 97:104, 127:131),drop=F]
 Lastly, make the HRD prediction.
 ```{r message=FALSE, warning=FALSE}
 pred <- chordPredict(contexts)
-
 pred
 ```
 
