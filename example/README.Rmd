@@ -27,8 +27,8 @@ install.packages('randomForest')
 install.packages("devtools")
 library(devtools)
 
-install_github('https://github.com/luannnguyen/mutSigExtractor')
-install_github('https://github.com/luannnguyen/CHORD/')
+install_github('https://github.com/UMCUGenetics/mutSigExtractor/')
+install_github('https://github.com/UMCUGenetics/CHORD/')
 ```
 
 # Quick start
