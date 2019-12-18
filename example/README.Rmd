@@ -162,7 +162,7 @@ also possible to specify the SNV and indel vcfs separately (by specifying the pa
 
 ### Extracting mutation contexts
 Create a directory to write all subsequent output. **Note**: the output from this tutorial exists in 
-the ```/output/``` directory by default. Delete this directory to create new output files.
+the ```output/``` directory by default. Delete this directory to create new output files.
 ```{r message=FALSE, warning=FALSE}
 dir.create('output/')
 ```
