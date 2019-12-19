@@ -130,11 +130,14 @@ Once we have the mutation contexts, a prediction can be made.
 # Tutorial
 
 This tutorial will demonstrate how HRD prediction can be performed
-locally. Somatic vcfs from a few primary tumors from the 560 breast
-cancer cohort (BRCA-EU, ICGC) will be used as example input. These are
-located at `example/vcf/` in the CHORD git repository. For large vcfs
-and/or many samples however, it is advised to run CHORD on a
-high-performance cluster (HPC).
+locally. For large vcfs and/or many samples, it is advised to run CHORD
+on a high-performance cluster (HPC).
+
+Somatic vcfs from a few primary tumors from the 560 breast cancer cohort
+(BRCA-EU, ICGC) will be used as example input. These are located at
+`example/vcf/` in the CHORD git repository. These vcfs have been
+generated from tsv files which are publically available at
+<https://dcc.icgc.org/repositories>.
 
 In part 1, we will use the vcfs directly as input for CHORD.
 
