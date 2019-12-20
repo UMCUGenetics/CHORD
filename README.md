@@ -70,7 +70,7 @@ the aforementioned order.
 contexts <- extractSigsChord(
   df.snv = bed_file_like_dataframe_with_snvs,
   df.indel = bed_file_like_dataframe_with_indels,
-  df.sv = dataframe_with_svtype_and_sv_len
+  df.sv = dataframe_with_svtype_and_svlen
 )
 ```
 
@@ -84,7 +84,7 @@ these yourself (in this case the `sv.caller` argument can be left out).
 contexts <- extractSigsChord(
   vcf.snv = '/path/to/vcf/with/snvs/',
   vcf.indel = '/path/to/vcf/with/indels/',
-  df.sv = dataframe_with_svtype_and_sv_len
+  df.sv = dataframe_with_svtype_and_svlen
 )
 ```
 
@@ -97,7 +97,7 @@ out).
 ``` r
 contexts <- extractSigsChord(
   vcf.snv = '/path/to/vcf/with/snvs_and_indels/', ## or: df.snv = bed_file_like_dataframe_with_snvs_and_indels
-  df.sv = dataframe_with_svtype_and_sv_len
+  df.sv = dataframe_with_svtype_and_svlen
 )
 ```
 
@@ -120,7 +120,7 @@ library(ref_genome)
 ## Specify the name of the BSgenome object to the ref.genome argument
 contexts <- extractSigsChord(
   vcf.snv = '/path/to/vcf/with/snvs_and_indels/',
-  df.sv = dataframe_with_svtype_and_sv_len
+  df.sv = dataframe_with_svtype_and_svlen
   ref.genome=ref_genome
 )
 ```
