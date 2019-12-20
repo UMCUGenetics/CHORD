@@ -7,27 +7,41 @@
 chordPredict(
   features,
   rf.model = CHORD,
-  hrd.cutoff = 0.5,
   show.features = F,
+  hrd.cutoff = 0.5,
+  min.indel.load = 50,
+  min.sv.load = 30,
+  min.msi.indel.rep = 14000,
   verbose = T
 )
 }
 \arguments{
-\item{features}{The output of extractSigsChord(), which is a dataframe containing the SNV, indel and
-SV context counts.}
+\item{features}{The output of extractSigsChord(), which is a dataframe containing the SNV, indel
+and SV context counts.}
 
 \item{rf.model}{The random forest model. Defaults to CHORD.}
 
-\item{hrd.cutoff}{Samples greater or equal to this cutoff will be marked as HRD in the output
-table of chordPredict(). Default is 0.5.}
-
 \item{show.features}{Show the mutation context matrix in the output table?}
+
+\item{hrd.cutoff}{Default=0.5. Samples greater or equal to this cutoff will be marked as HRD 
+(is_hrd==TRUE).}
+
+\item{min.indel.load}{Default=50. The minimum number of indels required to make an accurate HRD
+prediction. Samples with fewer indels than this value will be marked as is_hrd==NA (HR status 
+could not be confidently determined).}
+
+\item{min.sv.load}{Default=30. The minimum number of SVs required to make an accurate prediction
+of BRCA1-type vs. BRCA2-type HRD. Samples with fewer SVs than this value will be marked as 
+hrd_type==NA (HRD type could not be confidently determined).}
+
+\item{min.msi.indel.rep}{Default=14000 (changing this value is not advised). Samples with more 
+indels within repeats than this threshold will be considered to have microsatellite instability.}
 
 \item{verbose}{Show messages/warnings?}
 }
 \value{
-A dataframe containing per sample the probabilities of BRCA1-type and BRCA2-type HRD, 
-and HRD (= BRCA1-type HRD + BRCA2-type HRD)
+A dataframe containing per sample the probabilities of BRCA1-type and BRCA2-type HRD, and
+HRD (= BRCA1-type HRD + BRCA2-type HRD)
 }
 \description{
 A wrapper for predict.randomForest() from the randomForest package
