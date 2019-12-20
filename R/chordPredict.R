@@ -1,19 +1,27 @@
 #' Predict the probability of homogolous recombination deficiency using mutational signatures
-#' 
+#'
 #' @description A wrapper for predict.randomForest() from the randomForest package
 #'
-#' @param features The output of extractSigsChord(), which is a dataframe containing the SNV, indel and
-#' SV context counts.
+#' @param features The output of extractSigsChord(), which is a dataframe containing the SNV, indel
+#' and SV context counts.
 #' @param rf.model The random forest model. Defaults to CHORD.
-#' @param hrd.cutoff Samples greater or equal to this cutoff will be marked as HRD in the output
-#' table of chordPredict(). Default is 0.5.
 #' @param show.features Show the mutation context matrix in the output table?
+#' @param hrd.cutoff Default=0.5. Samples greater or equal to this cutoff will be marked as HRD 
+#' (is_hrd==TRUE).
+#' @param min.indel.load Default=50. The minimum number of indels required to make an accurate HRD
+#' prediction. Samples with fewer indels than this value will be marked as is_hrd==NA (HR status 
+#' could not be confidently determined).
+#' @param min.sv.load Default=30. The minimum number of SVs required to make an accurate prediction
+#' of BRCA1-type vs. BRCA2-type HRD. Samples with fewer SVs than this value will be marked as 
+#' hrd_type==NA (HRD type could not be confidently determined).
+#' @param min.msi.indel.rep Default=14000 (changing this value is not advised). Samples with more 
+#' indels within repeats than this threshold will be considered to have microsatellite instability.
 #' @param verbose Show messages/warnings?
 #'
-#' @return A dataframe containing per sample the probabilities of BRCA1-type and BRCA2-type HRD, 
-#' and HRD (= BRCA1-type HRD + BRCA2-type HRD)
+#' @return A dataframe containing per sample the probabilities of BRCA1-type and BRCA2-type HRD, and
+#' HRD (= BRCA1-type HRD + BRCA2-type HRD)
 #' @export
-#'
+#' 
 #' @examples
 #' ## Extract mutation contexts
 #' vcf_dir <- '/path_to_vcfs/'
@@ -25,7 +33,11 @@
 #' ## Predict HRD probability with CHORD
 #' chordPredict(contexts)
 
-chordPredict <- function(features, rf.model=CHORD, hrd.cutoff=0.5, show.features=F, verbose=T){
+chordPredict <- function(
+  features, rf.model=CHORD, show.features=F,
+  hrd.cutoff=0.5, min.indel.load=50, min.sv.load=30, min.msi.indel.rep=14000,
+  verbose=T
+){
   
   ## Converts the raw signature counts from extractSigsChord() to features used by CHORD
   features_split <- mutSigExtractor::splitDfRegex(features, c(snv='>',indel='[a-z]{3}[.]',sv='[A-Z]{3}'))
@@ -51,11 +63,11 @@ chordPredict <- function(features, rf.model=CHORD, hrd.cutoff=0.5, show.features
   ## QC
   qc <- list()
   qc$has_msi <- with(features_split,{
-    rowSums(indel[,grep('rep',colnames(indel)),drop=F]) > 14000
+    rowSums(indel[,grep('rep',colnames(indel)),drop=F]) > min.msi.indel.rep
   })
   
-  qc$low_indel_load <- rowSums(features_split$indel) < 50
-  qc$low_sv_load <- rowSums(features_split$sv) < 30
+  qc$low_indel_load <- rowSums(features_split$indel) < min.indel.load
+  qc$low_sv_load <- rowSums(features_split$sv) < min.sv.load
   qc <- as.data.frame(qc)
   
   failed_qc <- with(qc,{ has_msi | low_indel_load | low_sv_load })
@@ -63,9 +75,9 @@ chordPredict <- function(features, rf.model=CHORD, hrd.cutoff=0.5, show.features
   if(verbose & sum(failed_qc)>0){
     message(
       sum(failed_qc),' sample(s) failed QC:\n', 
-      '  ', sum(qc$has_msi),' with MSI (>14000 indels within repeats)\n',
-      '  ', sum(qc$low_indel_load), ' with <50 indels\n',
-      '  ', sum(qc$low_sv_load), ' with <30 SVs'
+      '  ', sum(qc$has_msi),' with MSI (>',min.msi.indel.rep,' indels within repeats)\n',
+      '  ', sum(qc$low_indel_load), ' with ', min.indel.load, ' indels\n',
+      '  ', sum(qc$low_sv_load), ' with ', min.sv.load, ' SVs'
     )
   }
   
