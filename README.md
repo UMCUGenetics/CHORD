@@ -44,7 +44,7 @@ extract the mutation contexts required by CHORD.
 ``` r
 contexts <- extractSigsChord(
   vcf.snv = '/path/to/vcf/with/snvs/',
-  vcf.indel = '/path/to/vcf/with/snvs/',
+  vcf.indel = '/path/to/vcf/with/indels/',
   vcf.sv = '/path/to/vcf/with/svs/',
   sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta'
 )
@@ -90,12 +90,11 @@ contexts <- extractSigsChord(
 
 The vcf.\* and df.\* arguments can be mixed. This is especially useful
 in the case of SV vcfs, since it is possible that you will need to parse
-these yourself.
+these yourself (in this case the `sv.caller` argument can be ignored).
 
 ``` r
 contexts <- extractSigsChord(
-  vcf.snv = '/path/to/vcf/with/snvs/',
-  vcf.indel = '/path/to/vcf/with/snvs/',
+  vcf.snv = '/path/to/vcf/with/snvs_and_indels/',
   df.sv = dataframe_with_svtype_and_sv_len
 )
 ```
@@ -113,10 +112,8 @@ library(ref_genome)
 
 ## Specify the name of the BSgenome object to the ref.genome argument
 contexts <- extractSigsChord(
-  vcf.snv = '/path/to/vcf/with/snvs/',
-  vcf.indel = '/path/to/vcf/with/snvs/',
-  vcf.sv = '/path/to/vcf/with/svs/',
-  sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta',
+  vcf.snv = '/path/to/vcf/with/snvs_and_indels/',
+  df.sv = dataframe_with_svtype_and_sv_len
   ref.genome=ref_genome
 )
 ```
@@ -232,9 +229,11 @@ for(i in 1:nrow(vcf_files)){
 ```
 
 The `sv.caller` parameter has been included in `extractSigsChord()`
-since different SV callers report SVs in different ways. In CHORD, we
-have included parsing for vcf produced by Manta and GRIDSS
-(`sv.caller='manta'` or `sv.caller='gridss'`).
+since different SV callers report SVs in different ways.
+`extractSigsChord()` includes parsing for vcf produced by Manta and
+GRIDSS (`sv.caller='manta'` or `sv.caller='gridss'`). If you have vcfs
+from other SV callers, a solution is to provide the relevant data as a
+dataframe (see section 2 of the tutorial).
 
 We can then merge the contexts into a matrix.
 
