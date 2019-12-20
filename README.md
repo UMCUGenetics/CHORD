@@ -90,7 +90,7 @@ contexts <- extractSigsChord(
 
 Often, SNVs and indels are reported in the same vcfs. In such cases, the
 vcf path can be specified to the `vcf.snv` argument (`vcf.indel` can be
-left out). Alterntaively, SNVs and indels can be provided as a
+left out). Alternatively, SNVs and indels can be provided as a
 dataframe, which can be specified to `df.snv` (with `df.indel` left
 out).
 
