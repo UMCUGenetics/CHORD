@@ -20,7 +20,7 @@ as the dependencies for both packages.
 ## Bioconductor packages required by mutSigExtractor
 install.packages('BiocManager')
 BiocManager::install('BSgenome') ## Install genome parser
-BiocManager::install('BSgenome.Hsapiens.UCSC.hg19') ## Install relevant genome
+BiocManager::install('BSgenome.Hsapiens.UCSC.hg19') ## Install the default genome
 
 ## randomForest is required by CHORD
 install.packages('randomForest')
@@ -76,31 +76,35 @@ contexts <- extractSigsChord(
 
 ## Inputs are flexible
 
-Often, SNV and indels are reported in the same vcfs. In such cases, the
-vcf path can be specified to the `vcf.snv` argument (`vcf.indel` can be
-left out).
-
-``` r
-contexts <- extractSigsChord(
-  vcf.snv = '/path/to/vcf/with/snvs_and_indels/',
-  vcf.sv = '/path/to/vcf/with/svs/',
-  sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta'
-)
-```
-
 The vcf.\* and df.\* arguments can be mixed. This is especially useful
 in the case of SV vcfs, since it is possible that you will need to parse
-these yourself (in this case the `sv.caller` argument can be ignored).
+these yourself (in this case the `sv.caller` argument can be left out).
 
 ``` r
 contexts <- extractSigsChord(
-  vcf.snv = '/path/to/vcf/with/snvs_and_indels/',
+  vcf.snv = '/path/to/vcf/with/snvs/',
+  vcf.indel = '/path/to/vcf/with/indels/',
   df.sv = dataframe_with_svtype_and_sv_len
 )
 ```
 
-A different reference genome than the default can be used. Genomes
-should be BSgenomes.
+Often, SNVs and indels are reported in the same vcfs. In such cases, the
+vcf path can be specified to the `vcf.snv` argument (`vcf.indel` can be
+left out). Alterntaively, SNVs and indels can be provided as a
+dataframe, which can be specified to `df.snv` (with `df.indel` left
+out).
+
+``` r
+contexts <- extractSigsChord(
+  vcf.snv = '/path/to/vcf/with/snvs_and_indels/', ## or: df.snv = bed_file_like_dataframe_with_snvs_and_indels
+  df.sv = dataframe_with_svtype_and_sv_len
+)
+```
+
+A different reference genome than the default
+(BSgenome.Hsapiens.UCSC.hg19) can be used. Genomes should be BSgenomes.
+The **name** of the BSgenome object (as a character string) is specified
+to `ref.genome`.
 
 ``` r
 ## Make sure to install and load the desired ref genome first
@@ -108,6 +112,9 @@ ref_genome <- 'BSgenome.Hsapiens.UCSC.hg38'
 
 install.packages('BiocManager')
 BiocManager::install(ref_genome)
+
+## Non-default genomes need to be explicitly loaded. The default (BSgenome.Hsapiens.UCSC.hg19)
+## is automatically loaded.
 library(ref_genome)
 
 ## Specify the name of the BSgenome object to the ref.genome argument
