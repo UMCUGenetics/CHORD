@@ -18,7 +18,7 @@ as the dependencies for both packages.
 ## Bioconductor packages required by mutSigExtractor
 install.packages('BiocManager')
 BiocManager::install('BSgenome') ## Install genome parser
-BiocManager::install('BSgenome.Hsapiens.UCSC.hg19') ## Install relevant genome
+BiocManager::install('BSgenome.Hsapiens.UCSC.hg19') ## Install the default genome
 
 ## randomForest is required by CHORD
 install.packages('randomForest')
@@ -38,7 +38,7 @@ and SVs per sample. The first step is to extract the mutation contexts required 
 ```{r eval=FALSE, error=FALSE}
 contexts <- extractSigsChord(
   vcf.snv = '/path/to/vcf/with/snvs/',
-  vcf.indel = '/path/to/vcf/with/snvs/',
+  vcf.indel = '/path/to/vcf/with/indels/',
   vcf.sv = '/path/to/vcf/with/svs/',
   sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta'
 )
@@ -74,30 +74,32 @@ contexts <- extractSigsChord(
 ```
 
 The vcf.* and df.* arguments can be mixed. This is especially useful in the case of SV vcfs, since
-it is possible that you will need to parse these yourself.
+it is possible that you will need to parse these yourself (in this case the ```sv.caller``` 
+argument can be left out).
 ```{r eval=FALSE, error=FALSE}
 contexts <- extractSigsChord(
-  vcf.snv = '/path/to/vcf/with/snvs/',
-  vcf.indel = '/path/to/vcf/with/snvs/',
+  vcf.snv = '/path/to/vcf/with/snvs_and_indels/',
   df.sv = dataframe_with_svtype_and_sv_len
 )
 ```
 
-A different reference genome than the default can be used. Genomes should be BSgenomes.
+A different reference genome than the default (BSgenome.Hsapiens.UCSC.hg19) can be used. Genomes 
+should be BSgenomes.
 ```{r eval=FALSE, error=FALSE}
 ## Make sure to install and load the desired ref genome first
 ref_genome <- 'BSgenome.Hsapiens.UCSC.hg38'
 
 install.packages('BiocManager')
 BiocManager::install(ref_genome)
+
+## Non-default genomes need to be explicitly loaded. The default (BSgenome.Hsapiens.UCSC.hg19)
+## is automatically loaded.
 library(ref_genome)
 
 ## Specify the name of the BSgenome object to the ref.genome argument
 contexts <- extractSigsChord(
-  vcf.snv = '/path/to/vcf/with/snvs/',
-  vcf.indel = '/path/to/vcf/with/snvs/',
-  vcf.sv = '/path/to/vcf/with/svs/',
-  sv.caller = 'gridss' ## Can be 'gridss' (default) or 'manta',
+  vcf.snv = '/path/to/vcf/with/snvs_and_indels/',
+  df.sv = dataframe_with_svtype_and_sv_len
   ref.genome=ref_genome
 )
 ```
@@ -193,8 +195,10 @@ for(i in 1:nrow(vcf_files)){
 }
 ```
 The ```sv.caller``` parameter has been included in ```extractSigsChord()``` since different SV
-callers report SVs in different ways. In CHORD, we have included parsing for vcf produced by Manta 
-and GRIDSS (```sv.caller='manta'``` or ```sv.caller='gridss'```).
+callers report SVs in different ways. ```extractSigsChord()``` includes parsing for vcf produced by
+Manta and GRIDSS (```sv.caller='manta'``` or ```sv.caller='gridss'```). If you have vcfs from other
+SV callers, a solution is to provide the relevant data as a dataframe (see section 2 of the 
+tutorial).
 
 We can then merge the contexts into a matrix.
 ```{r message=FALSE, warning=FALSE}
