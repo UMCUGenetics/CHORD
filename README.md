@@ -58,14 +58,6 @@ produced by Manta or GRIDSS has been built into CHORD.
 Alternatively, dataframes can be used as input (handy if you want to
 parse the vcfs yourself and supply this preprocessed data to CHORD).
 
-  - For SNVs and indels, a dataframe with the columns: chrom, pos, ref,
-    alt
-  - For SVs, a dataframe with the columns: sv\_type, sv\_len. For
-    sv\_type, values must be DEL, DUP, INV, TRA
-
-The column names themselves do not matter, as long as the columns are in
-the aforementioned order.
-
 ``` r
 contexts <- extractSigsChord(
   df.snv = bed_file_like_dataframe_with_snvs,
@@ -73,6 +65,30 @@ contexts <- extractSigsChord(
   df.sv = dataframe_with_svtype_and_svlen
 )
 ```
+
+For SNVs and indels, a dataframe with the columns: chrom, pos, ref, alt.
+
+    ##   CHROM      POS REF ALT
+    ## 1     1 16145827   A   C
+    ## 2     1 16492085   G   C
+    ## 3     1 17890303   C   G
+    ## 4     1 18877885   G   A
+    ## 5     1 18919776   T   C
+
+For SVs, a dataframe with the columns: sv\_type, sv\_len. For sv\_type,
+values must be DEL, DUP, INV, TRA (deletions, duplications, inversions,
+translocations). For translocations, sv\_len information is discarded.
+
+    ##   sv_type    sv_len
+    ## 1     TRA        NA
+    ## 2     DEL      1696
+    ## 3     DEL     22644
+    ## 4     DUP      1703
+    ## 5     DEL      1789
+    ## 6     DEL     49256
+
+The column names themselves do not matter, as long as the columns are in
+the aforementioned order.
 
 ## Inputs are flexible
 
@@ -237,7 +253,7 @@ for(i in 1:nrow(vcf_files)){
 
 The `sv.caller` parameter has been included in `extractSigsChord()`
 since different SV callers report SVs in different ways.
-`extractSigsChord()` includes parsing for vcf produced by Manta and
+`extractSigsChord()` includes parsing for vcfs produced by Manta and
 GRIDSS (`sv.caller='manta'` or `sv.caller='gridss'`). If you have vcfs
 from other SV callers, a solution is to provide the relevant data as a
 dataframe (see section 2 of the tutorial).
