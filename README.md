@@ -8,6 +8,15 @@ microhomology and 1-100kb structural duplications. Additionally, 1-100kb
 structural duplications are used to distinguish BRCA1-type HRD from
 BRCA2-type HRD.
 
+# Reference
+
+**Pan-cancer landscape of homologous recombination deficiency**  
+*Luan Nguyen, John Martens, Arne Van Hoeck, Edwin Cuppen*  
+<https://www.biorxiv.org/content/10.1101/2020.01.13.905026v1>
+
+For now, please refer to the paper on bioRxiv. Once the paper is
+published, this link will be updated.
+
 # Installation
 
 CHORD is itself an R package. Before using CHORD, some other R packages
