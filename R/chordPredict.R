@@ -76,15 +76,15 @@ chordPredict <- function(
     message(
       sum(failed_qc),' sample(s) failed QC:\n', 
       '  ', sum(qc$has_msi),' with MSI (>',min.msi.indel.rep,' indels within repeats)\n',
-      '  ', sum(qc$low_indel_load), ' with ', min.indel.load, ' indels\n',
-      '  ', sum(qc$low_sv_load), ' with ', min.sv.load, ' SVs'
+      '  ', sum(qc$low_indel_load), ' with <', min.indel.load, ' indels\n',
+      '  ', sum(qc$low_sv_load), ' with <', min.sv.load, ' SVs'
     )
   }
   
   df$qc <- unlist(apply(qc,1,function(i){
-    string <- colnames(qc)[i]
-    if(length(string)==0){ string <- 'pass' }
-    return(string)
+    v <- colnames(qc)[i]
+    if(length(v)==0){ v <- 'pass' }
+    paste(v,collapse=',')
   }))
   
   ## Determine if sample is HRD
