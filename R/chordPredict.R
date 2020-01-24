@@ -16,6 +16,7 @@
 #' hrd_type==NA (HRD type could not be confidently determined).
 #' @param min.msi.indel.rep Default=14000 (changing this value is not advised). Samples with more 
 #' indels within repeats than this threshold will be considered to have microsatellite instability.
+#' @param detailed.remarks If TRUE, shows min.indel.load and min.sv.load numbers in the remarks columns
 #' @param verbose Show messages/warnings?
 #'
 #' @return A dataframe containing per sample the probabilities of BRCA1-type and BRCA2-type HRD, and
@@ -36,7 +37,7 @@
 chordPredict <- function(
   features, rf.model=CHORD, show.features=F,
   hrd.cutoff=0.5, min.indel.load=50, min.sv.load=30, min.msi.indel.rep=14000,
-  verbose=T
+  detailed.remarks=F, verbose=T
 ){
   
   ## Converts the raw signature counts from extractSigsChord() to features used by CHORD
@@ -54,13 +55,13 @@ chordPredict <- function(
     rel.types = c('snv','indel','sv')
   )
   
-  ## Prediction
+  #--------- Prediction ---------#
   df <- as.data.frame(predict(rf.model, features_processed, type='prob'))
   df <- df[,c('none','BRCA1','BRCA2')]
   colnames(df) <- paste0('p_',colnames(df))
   df$p_hrd <- df$p_BRCA1 + df$p_BRCA2
   
-  ## QC
+  #--------- QC ---------#
   qc <- list()
   qc$has_msi <- with(features_split,{
     rowSums(indel[,grep('rep',colnames(indel)),drop=F]) > min.msi.indel.rep
@@ -73,25 +74,66 @@ chordPredict <- function(
   failed_qc <- with(qc,{ has_msi | low_indel_load | low_sv_load })
   
   if(verbose & sum(failed_qc)>0){
+    
+    qc_messages <- list(
+      has_msi=paste0('  Critical: ', sum(qc$has_msi),' with MSI (>',min.msi.indel.rep,' indels within repeats)\n'),
+      low_indel_load=paste0('  Critical: ',sum(qc$low_indel_load),' with <', min.indel.load,' indels\n'),
+      low_sv_load=paste0('  Non-critical: ', sum(qc$low_sv_load), ' with <', min.sv.load, ' SVs')
+    )
+    
     message(
       sum(failed_qc),' sample(s) failed QC:\n', 
-      '  ', sum(qc$has_msi),' with MSI (>',min.msi.indel.rep,' indels within repeats)\n',
-      '  ', sum(qc$low_indel_load), ' with <', min.indel.load, ' indels\n',
-      '  ', sum(qc$low_sv_load), ' with <', min.sv.load, ' SVs'
+      if(sum(qc$has_msi)>0){ qc_messages$has_msi } else { '' },
+      if(sum(qc$low_indel_load)>0){ qc_messages$low_indel_load } else { '' },
+      if(sum(qc$low_sv_load)){ qc_messages$low_sv_load } else { '' }
     )
   }
   
-  df$qc <- unlist(apply(qc,1,function(i){
-    v <- colnames(qc)[i]
-    if(length(v)==0){ v <- 'pass' }
-    paste(v,collapse=',')
-  }))
+  ## Informative QC tags
+  if(!detailed.remarks){
+    failed_qc_strings <- colnames(qc)
+    names(failed_qc_strings) <- colnames(qc)
+  } else {
+    ## Note to self: make sure order of qc names is correct upon editing
+    failed_qc_strings <- c(
+      has_msi=paste0('Has MSI (>',min.msi.indel.rep,' indel.rep)'),
+      low_indel_load=paste0('<',min.indel.load,' indels'),
+      low_sv_load=paste0('<',min.sv.load,' SVs')
+    )
+  }
   
-  ## Determine if sample is HRD
-  df$is_hrd <- df$p_hrd >= hrd.cutoff
-  df$is_hrd[ qc$low_indel_load ] <- NA
+  ## is_hrd qc tags
+  df_qc_is_hrd <- data.frame(
+    has_msi=ifelse(qc$has_msi,failed_qc_strings['has_msi'],''),
+    low_indel_load=ifelse(qc$low_indel_load,failed_qc_strings['low_indel_load'],'')
+  )
   
-  ## Determine HRD type
+  qc_is_hrd <- with(df_qc_is_hrd,{
+    paste(has_msi, low_indel_load,sep=';')
+  })
+  qc_is_hrd <- gsub('^;|;$','',qc_is_hrd)
+  qc_is_hrd[nchar(qc_is_hrd)==0] <- ''
+  
+  ## hrd_type qc tags
+  qc_hrd_type <- ifelse(
+    qc$low_sv_load,
+    failed_qc_strings['low_sv_load'],
+    ''
+  )
+  
+  qc_out <- data.frame(
+    remarks_hr_status=qc_is_hrd, 
+    remarks_hrd_type=qc_hrd_type
+  )
+  
+  #--------- Determine if sample is HRD (only if sample has enough indels) ---------#
+  df$hr_status <- ifelse(
+    df$p_hrd >= hrd.cutoff,
+    'HR_deficient','HR_proficient'
+  )
+  df$hr_status[ qc$low_indel_load | qc$has_msi ] <- 'cannot_be_determined'
+  
+  #--------- Determine HRD type ---------#
   df$hrd_type <- unlist(
     Map(function(p_BRCA1, p_BRCA2, p_hrd){
       if(p_hrd>=hrd.cutoff){
@@ -101,7 +143,9 @@ chordPredict <- function(
       }
     }, df$p_BRCA1, df$p_BRCA2, df$p_hrd)
   )
-  df$hrd_type[ qc$low_sv_load | qc$low_indel_load ] <- NA
+  df$hrd_type[ qc$low_sv_load | qc$low_indel_load ] <- 'cannot_be_determined'
+  
+  df <- cbind(df, qc_out)
   
   if(show.features){
     df <- merge(
