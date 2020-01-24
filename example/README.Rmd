@@ -275,19 +275,20 @@ CHORD outputs the probability of:
 Note that ```p_hrd``` = ```p_BRCA1``` + ```p_BRCA2```. Furthermore, ```p_none``` + ```p_BRCA1``` +
 ```p_BRCA2``` = 1.
 
-```is_hrd``` tells us if ```p_hrd``` **>= 0.5 (the HRD classification threshold)**. If this is TRUE,
-then ```hrd_type``` will tell us if the sample has BRCA1-type HRD or BRCA2-type HRD (=max(```p_BRCA1```,```p_BRCA2```)).
+```hr_status``` tells us if a sample is HR deficient (```p_hrd``` **>= 0.5 (the HRD classification threshold)**) 
+or proficient. If a sample is HRD, then ```hrd_type``` will tell us if the sample has BRCA1-type HRD 
+or BRCA2-type HRD (=max(```p_BRCA1```,```p_BRCA2```)).
 
-#### QC checks
-Under ```qc```, we can see that PD7344 has ```low_indel_load```. CHORD requires >=50 indels to
-accurately determine whether a sample is HRD. PD7344 fails this check and therefore ```is_hrd``` is
-NA. Consequently, HRD subtype can not be determined, and thus ```hrd_type``` is NA.
+#### Pre-requisites for accurate HRD prediction
+Under ```remarks_hr_status```, we can see that PD7344 has ```low_indel_load```. CHORD requires >=50 
+indels to accurately determine whether a sample is HRD. Therefore, HRD subtype can not be determined 
+for this sample, and thus ```hr_status``` is ```cannot_be_determined```.
 
-Also under ```qc```, we can see that PD11352 has ```low_sv_load```. CHORD requires >=30 SVs to
-accurately determine HRD subtype. Thus, while this sample had sufficient number of indels to
-determine HRD, the number of SVs was not sufficient, and therefore ```hrd_type``` is NA.
+Also under ```remarks_hrd_type```, we can see that PD11352 has ```low_sv_load```. CHORD requires >=30 
+SVs to accurately determine HRD subtype. Thus, while this sample had sufficient number of indels to
+determine HRD, the number of SVs was not sufficient, and therefore ```hrd_type``` is ```cannot_be_determined```.
 
-The user may of course ignore these QC warnings and proceed with using the raw probabilities 
+The user may of course ignore these remarks and proceed with using the raw probabilities 
 outputted by CHORD (```p_hrd``` and/or ```p_BRCA1```/```pBRCA2```).
 
 
