@@ -309,12 +309,18 @@ write.table(pred, 'output/chord_pred.txt', sep='\t', quote=F)
 pred
 ```
 
-    ##    sample p_none p_BRCA1 p_BRCA2 p_hrd             qc is_hrd   hrd_type
-    ## 1 PD10010  1.000   0.000   0.000 0.000           pass  FALSE       none
-    ## 2 PD11352  1.000   0.000   0.000 0.000    low_sv_load  FALSE       <NA>
-    ## 3  PD3905  0.060   0.924   0.016 0.940           pass   TRUE BRCA1_type
-    ## 4  PD4116  0.102   0.106   0.792 0.898           pass   TRUE BRCA2_type
-    ## 5  PD7344  0.998   0.000   0.002 0.002 low_indel_load     NA       <NA>
+    ##    sample p_none p_BRCA1 p_BRCA2 p_hrd            hr_status
+    ## 1 PD10010  1.000   0.000   0.000 0.000        HR_proficient
+    ## 2 PD11352  1.000   0.000   0.000 0.000        HR_proficient
+    ## 3  PD3905  0.060   0.924   0.016 0.940         HR_deficient
+    ## 4  PD4116  0.102   0.106   0.792 0.898         HR_deficient
+    ## 5  PD7344  0.998   0.000   0.002 0.002 cannot_be_determined
+    ##               hrd_type remarks_hr_status remarks_hrd_type
+    ## 1                 none                                   
+    ## 2 cannot_be_determined                        low_sv_load
+    ## 3           BRCA1_type                                   
+    ## 4           BRCA2_type                                   
+    ## 5 cannot_be_determined    low_indel_load
 
 ### Interpreting the output
 
@@ -330,24 +336,26 @@ CHORD outputs the probability of:
 Note that `p_hrd` = `p_BRCA1` + `p_BRCA2`. Furthermore, `p_none` +
 `p_BRCA1` + `p_BRCA2` = 1.
 
-`is_hrd` tells us if `p_hrd` **\>= 0.5 (the HRD classification
-threshold)**. If this is TRUE, then `hrd_type` will tell us if the
-sample has BRCA1-type HRD or BRCA2-type HRD (=max(`p_BRCA1`,`p_BRCA2`)).
+`hr_status` tells us if a sample is HR deficient (`p_hrd` **\>= 0.5 (the
+HRD classification threshold)**) or proficient. If a sample is HRD, then
+`hrd_type` will tell us if the sample has BRCA1-type HRD or BRCA2-type
+HRD (=max(`p_BRCA1`,`p_BRCA2`)).
 
-#### QC checks
+#### Pre-requisites for accurate HRD prediction
 
-Under `qc`, we can see that PD7344 has `low_indel_load`. CHORD requires
-\>=50 indels to accurately determine whether a sample is HRD. PD7344
-fails this check and therefore `is_hrd` is NA. Consequently, HRD subtype
-can not be determined, and thus `hrd_type` is NA.
+Under `remarks_hr_status`, we can see that PD7344 has `low_indel_load`.
+CHORD requires \>=50 indels to accurately determine whether a sample is
+HRD. Therefore, HRD subtype can not be determined for this sample, and
+thus `hr_status` is `cannot_be_determined`.
 
-Also under `qc`, we can see that PD11352 has `low_sv_load`. CHORD
-requires \>=30 SVs to accurately determine HRD subtype. Thus, while this
-sample had sufficient number of indels to determine HRD, the number of
-SVs was not sufficient, and therefore `hrd_type` is NA.
+Also under `remarks_hrd_type`, we can see that PD11352 has
+`low_sv_load`. CHORD requires \>=30 SVs to accurately determine HRD
+subtype. Thus, while this sample had sufficient number of indels to
+determine HRD, the number of SVs was not sufficient, and therefore
+`hrd_type` is `cannot_be_determined`.
 
-The user may of course ignore these QC warnings and proceed with using
-the raw probabilities outputted by CHORD (`p_hrd` and/or
+The user may of course ignore these remarks and proceed with using the
+raw probabilities outputted by CHORD (`p_hrd` and/or
 `p_BRCA1`/`pBRCA2`).
 
 ## 2\. Running CHORD from dataframes
@@ -506,8 +514,10 @@ pred <- chordPredict(contexts)
 pred
 ```
 
-    ##   sample p_none p_BRCA1 p_BRCA2 p_hrd   qc is_hrd   hrd_type
-    ## 1 PD3905   0.06   0.924   0.016  0.94 pass   TRUE BRCA1_type
+    ##   sample p_none p_BRCA1 p_BRCA2 p_hrd    hr_status   hrd_type remarks_hr_status
+    ## 1 PD3905   0.06   0.924   0.016  0.94 HR_deficient BRCA1_type                  
+    ##   remarks_hrd_type
+    ## 1
 
 Please refer back to section 1 of the tutorial for interpreting CHORD’s
 output.
