@@ -1,7 +1,7 @@
 Package: CHORD
 Type: Package
 Title: Classifier of Homologous Recombination Deficiency
-Version: 1.08
+Version: 1.10
 Author: Luan Nguyen
 Maintainer: The package maintainer <n.l.nguyen-2@umcutrecht.nl>
 Description: CHORD is a random forest model that uses the relative counts of somatic mutation contexts to predict
