@@ -304,7 +304,7 @@ Once we have the context matrix ready, we can use it for predicting HRD.
 
 ``` r
 chord_output <- chordPredict(merged_contexts, verbose=F)
-write.table(chord_output$predictions, 'output/chord_pred.txt', sep='\t', quote=F)
+write.table(chord_output$pred, 'output/chord_pred.txt', sep='\t', quote=F)
 
 chord_output
 ```
@@ -320,9 +320,9 @@ chord_output
     ##  For 0 samples, HRD subtype could not be determined
     ##  
     ## Objects in output:
-    ##  $predictions    HRD, HRD subtype probabilities, and QC remarks
-    ##  $ci_estimates   Confidence interval estimates
-    ##  $features   Feature matrix used for prediction
+    ##  $pred: HRD, HRD subtype probabilities, and QC remarks
+    ##  $bootstrap_pred: Predictions from feature set bootstrapping
+    ##  $features: Feature matrix used for prediction
 
 #### Main output
 
@@ -330,7 +330,7 @@ To extract the HRD
     probabilities:
 
 ``` r
-chord_output$predictions
+chord_output$pred
 ```
 
     ##         p_BRCA1 p_BRCA2 p_hrd            hr_status   hrd_type remarks_hr_status
@@ -374,28 +374,39 @@ The user may of course ignore these remarks and proceed with using the
 raw probabilities outputted by CHORD (`p_hrd` and/or
 `p_BRCA1`/`pBRCA2`).
 
-#### Confidence intervals: stability of predictions
+#### Stability of predictions
 
-To extract the confidence interval
-    estimates:
+To extract the bootstrap
+    predictions:
 
 ``` r
-chord_output$ci_estimates
+chord_output$bootstrap_pred
 ```
 
-    ##         p_BRCA1.5% p_BRCA1.95% p_BRCA2.5% p_BRCA2.95% p_hrd.5% p_hrd.95%
-    ## PD10010     0.0000      0.0090     0.0000      0.0021   0.0000    0.0090
-    ## PD11352     0.0000      0.0000     0.0000      0.0000   0.0000    0.0000
-    ## PD3905      0.6858      0.9360     0.0058      0.0324   0.6960    0.9401
-    ## PD4116      0.0978      0.1181     0.7698      0.7961   0.8817    0.8981
-    ## PD7344      0.0000      0.0121     0.0000      0.0101   0.0000    0.0163
+    ##         p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50% p_BRCA2.95%
+    ## PD10010     0.0000       0.000      0.0090     0.0000       0.000      0.0020
+    ## PD11352     0.0000       0.000      0.0001     0.0000       0.000      0.0000
+    ## PD3905      0.5826       0.874      0.9183     0.0058       0.013      0.0362
+    ## PD4116      0.0938       0.102      0.1233     0.7479       0.785      0.7921
+    ## PD7344      0.0000       0.001      0.0082     0.0000       0.002      0.0160
+    ##         p_hrd.5% p_hrd.50% p_hrd.95%
+    ## PD10010   0.0000     0.000    0.0110
+    ## PD11352   0.0000     0.000    0.0001
+    ## PD3905    0.5925     0.903    0.9284
+    ## PD4116    0.8757     0.888    0.8941
+    ## PD7344    0.0000     0.003    0.0204
 
-The confidence intervals (CI) give an idea of the likely error of each
-prediction probability ( i.e. errorbar upper and lower values).
+To assess the stability of prediction for each sample, bootstrapping is
+performed by resampling the feature vector 20 times and calculating HRD
+probabilities for each iteration. The probabilities at the 5%, 50% 95%
+quantiles are then calculated. In other words, the bootstraped
+predictions provide a lower (5% quantile) and upper (95% quantile) error
+from the median probability (50% quantile) for each prediction class.
 
-CI estimates are determined by resampling the feature vector for each
-sample 20 times and calculating HRD probabilities for each iteration.
-The probabilities at the 5% and 95% quantiles are then calculated.
+The user may choose to use the median probabilities in place of the
+single probabilities (as in `chord_output$pred`). This can give more
+accurate HRD probabilities, especially for samples with low mutational
+load.
 
 ## 2\. Running CHORD from dataframes
 
@@ -550,7 +561,7 @@ Lastly, make the HRD prediction.
 
 ``` r
 chord_output <- chordPredict(contexts, verbose=F)
-chord_output$predictions
+chord_output$pred
 ```
 
     ##        p_BRCA1 p_BRCA2 p_hrd    hr_status   hrd_type remarks_hr_status
