@@ -384,17 +384,17 @@ chord_output$bootstrap_pred
 ```
 
     ##         p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50% p_BRCA2.95%
-    ## PD10010     0.0000       0.000      0.0090     0.0000       0.000      0.0020
-    ## PD11352     0.0000       0.000      0.0001     0.0000       0.000      0.0000
-    ## PD3905      0.5826       0.874      0.9183     0.0058       0.013      0.0362
-    ## PD4116      0.0938       0.102      0.1233     0.7479       0.785      0.7921
-    ## PD7344      0.0000       0.001      0.0082     0.0000       0.002      0.0160
+    ## PD10010     0.0000       0.000      0.0090      0.000       0.000      0.0045
+    ## PD11352     0.0000       0.000      0.0000      0.000       0.000      0.0000
+    ## PD3905      0.6431       0.874      0.9322      0.004       0.009      0.0626
+    ## PD4116      0.0939       0.103      0.1167      0.767       0.784      0.7961
+    ## PD7344      0.0000       0.002      0.2216      0.000       0.003      0.1721
     ##         p_hrd.5% p_hrd.50% p_hrd.95%
-    ## PD10010   0.0000     0.000    0.0110
-    ## PD11352   0.0000     0.000    0.0001
-    ## PD3905    0.5925     0.903    0.9284
-    ## PD4116    0.8757     0.888    0.8941
-    ## PD7344    0.0000     0.003    0.0204
+    ## PD10010   0.0000     0.001    0.0223
+    ## PD11352   0.0000     0.000    0.0000
+    ## PD3905    0.6509     0.910    0.9402
+    ## PD4116    0.8779     0.889    0.8981
+    ## PD7344    0.0000     0.006    0.3937
 
 To assess the stability of prediction for each sample, bootstrapping is
 performed by resampling the feature vector 20 times and calculating HRD
@@ -407,6 +407,10 @@ The user may choose to use the median probabilities in place of the
 single probabilities (as in `chord_output$pred`). This can give more
 accurate HRD probabilities, especially for samples with low mutational
 load.
+
+Note that performing the bootstrapping is computationally expensive.
+Bootstrapping can be turned off by specifying `do.bootstrap=F` to
+`chordPredict()`.
 
 ## 2\. Running CHORD from dataframes
 
