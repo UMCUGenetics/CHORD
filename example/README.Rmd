@@ -257,40 +257,55 @@ merged_contexts[,1:5]
 ### Predicting HRD and interpreting CHORD's output
 Once we have the context matrix ready, we can use it for predicting HRD.
 ```{r message=FALSE, warning=FALSE}
-pred <- chordPredict(merged_contexts, verbose=F)
-write.table(pred, 'output/chord_pred.txt', sep='\t', quote=F)
+chord_output <- chordPredict(merged_contexts, verbose=F)
+write.table(chord_output$predictions, 'output/chord_pred.txt', sep='\t', quote=F)
 
-pred
+chord_output
 ```
 
-### Interpreting the output
 #### Main output
+To extract the HRD probabilities:
+```{r message=FALSE, warning=FALSE}
+chord_output$predictions
+```
+
 CHORD outputs the probability of:
 
 * HRD: ```p_hrd```
 * BRCA1-type HRD: ```p_BRCA1```
 * BRCA2-type HRD: ```p_BRCA2```
-* Not HRD: ```p_none```
 
-Note that ```p_hrd``` = ```p_BRCA1``` + ```p_BRCA2```. Furthermore, ```p_none``` + ```p_BRCA1``` +
-```p_BRCA2``` = 1.
-
-```hr_status``` tells us if a sample is HR deficient (```p_hrd``` **>= 0.5 (the HRD classification threshold)**) 
+```hr_status``` tells us if a sample is HR deficient (```p_hrd``` >= 0.5) 
 or proficient. If a sample is HRD, then ```hrd_type``` will tell us if the sample has BRCA1-type HRD 
 or BRCA2-type HRD (=max(```p_BRCA1```,```p_BRCA2```)).
 
 #### Pre-requisites for accurate HRD prediction
-Under ```remarks_hr_status```, we can see that PD7344 has ```low_indel_load```. CHORD requires >=50 
-indels to accurately determine whether a sample is HRD. Therefore, HRD subtype can not be determined 
-for this sample, and thus ```hr_status``` is ```cannot_be_determined```.
+CHORD requires **>=50 indels** to accurately determine whether a sample is HRD. If this criterion is not
+met, ```hr_status``` will be ```cannot_be_determined``` and ```remarks_hr_status``` will be 
+```<50 indels```. 
 
-Also under ```remarks_hrd_type```, we can see that PD11352 has ```low_sv_load```. CHORD requires >=30 
-SVs to accurately determine HRD subtype. Thus, while this sample had sufficient number of indels to
-determine HRD, the number of SVs was not sufficient, and therefore ```hrd_type``` is ```cannot_be_determined```.
+CHORD **cannot be applied to MSI samples**. If an MSI sample is detected, ```hr_status``` will be 
+```cannot_be_determined``` and ```remarks_hr_status``` will be ```Has MSI (>14000 indel.rep)```
+
+If a sample is HRD, CHORD requires **>=30 SVs** to accurately determine HRD subtype. If this criterion is not
+met, ```hrd_type``` will be ```cannot_be_determined```, and ```remarks_hr_status``` will be 
+```<30 SVs```.
 
 The user may of course ignore these remarks and proceed with using the raw probabilities 
 outputted by CHORD (```p_hrd``` and/or ```p_BRCA1```/```pBRCA2```).
 
+#### Confidence intervals: stability of predictions
+To extract the confidence interval estimates:
+```{r message=FALSE, warning=FALSE}
+chord_output$ci_estimates
+```
+
+The confidence intervals (CI) give an idea of the likely error of each prediction probability (i.e.
+errorbar upper and lower values). 
+
+CI estimates are determined by resampling the feature vector for each sample 20 times and
+calculating HRD probabilities for each iteration. The probabilities at the 5% and 95% quantiles are
+then calculated.
 
 ## 2. Running CHORD from dataframes
 To run CHORD on non-standard vcfs or from other sources, we can create dataframes that 
@@ -378,11 +393,18 @@ contexts[,c(1:4, 97:104, 127:131),drop=F]
 
 Lastly, make the HRD prediction.
 ```{r message=FALSE, warning=FALSE}
-pred <- chordPredict(contexts)
-pred
+chord_output <- chordPredict(contexts, verbose=F)
+chord_output$predictions
 ```
 
 Please refer back to section 1 of the tutorial for interpreting CHORD's output.
 
-
+```{r error=FALSE, results="hide", echo=FALSE}
+pkg_dir  <- '/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/'
+file.copy(
+   paste0(pkg_dir,'/example/README.md'),
+   paste0(pkg_dir,'/README.md'),
+   overwrite=T
+)
+```
 
