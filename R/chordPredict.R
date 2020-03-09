@@ -5,7 +5,6 @@
 #' @param features The output of extractSigsChord(), which is a dataframe containing the SNV, indel
 #' and SV context counts.
 #' @param rf.model The random forest model. Defaults to CHORD.
-#' @param show.features Show the mutation context matrix in the output table?
 #' @param hrd.cutoff Default=0.5. Samples greater or equal to this cutoff will be marked as HRD 
 #' (is_hrd==TRUE).
 #' @param min.indel.load Default=50. The minimum number of indels required to make an accurate HRD
@@ -16,11 +15,17 @@
 #' hrd_type==NA (HRD type could not be confidently determined).
 #' @param min.msi.indel.rep Default=14000 (changing this value is not advised). Samples with more 
 #' indels within repeats than this threshold will be considered to have microsatellite instability.
+#' @param do.ci.estim Perform confidence interval estimation? NOTE: this is computationally expensive. 
+#' Resamples the feature vector for each sample (number of times provided by ci.estim.iters) and
+#' calculates HRD probabilities for each iteration. Returns the probabilities at the quantiles
+#' specifying in ci.quantiles
+#' @param ci.estim.iters Number of resampling iterations for determining the confidence intervals
+#' @param ci.quantiles A numeric vector of length 2 specifying the quantiles used to calculate the 
+#' confidence intervals
 #' @param detailed.remarks If TRUE, shows min.indel.load and min.sv.load numbers in the remarks columns
-#' @param verbose Show messages/warnings?
+#' @param verbose Show messages?
 #'
-#' @return A dataframe containing per sample the probabilities of BRCA1-type and BRCA2-type HRD, and
-#' HRD (= BRCA1-type HRD + BRCA2-type HRD)
+#' @return A list containing the HRD probabilities, confidence interval estimates, and input features
 #' @export
 #' 
 #' @examples
@@ -35,11 +40,25 @@
 #' chordPredict(contexts)
 
 chordPredict <- function(
-  features, rf.model=CHORD, show.features=F,
-  hrd.cutoff=0.5, min.indel.load=50, min.sv.load=30, min.msi.indel.rep=14000,
-  detailed.remarks=F, verbose=T
+  features, rf.model=CHORD, hrd.cutoff=0.5, 
+  
+  ## QC thresholds
+  min.indel.load=50, min.sv.load=30, min.msi.indel.rep=14000,
+  
+  ## Confidence interval estimation
+  do.ci.estim=T, ci.estim.iters=20, ci.quantiles=c(0.05,0.95),
+  
+  ## Other
+  detailed.remarks=T, verbose=T
 ){
   
+  #features=read.delim('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/output/merged_contexts.txt', check.names=F)
+  
+  # features=readRDS('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/HMF_DR010_DR047/matrices/merged_contexts.rds')
+  # features=do.call(cbind, unname(features))
+  # features=features[1:100,]
+  
+  if(verbose){ message('Preprocessing features...') }
   ## Converts the raw signature counts from extractSigsChord() to features used by CHORD
   features_split <- mutSigExtractor::splitDfRegex(features, c(snv='>',indel='[a-z]{3}[.]',sv='[A-Z]{3}'))
   features_processed <- mutSigExtractor::transformContexts(
@@ -56,12 +75,75 @@ chordPredict <- function(
   )
   
   #--------- Prediction ---------#
-  df <- as.data.frame(predict(rf.model, features_processed, type='prob'))
-  df <- df[,c('none','BRCA1','BRCA2')]
-  colnames(df) <- paste0('p_',colnames(df))
-  df$p_hrd <- df$p_BRCA1 + df$p_BRCA2
+  if(verbose){ message('Calculating HRD probabilities...') }
+  doPredict <- function(m){
+    df <- as.data.frame(predict(rf.model, m, type='prob'))
+    df <- df[,c('none','BRCA1','BRCA2')]
+    colnames(df) <- paste0('p_',colnames(df))
+    df$p_hrd <- df$p_BRCA1 + df$p_BRCA2
+    
+    return(df)
+  }
+  
+  df <- doPredict(features_processed)
+  
+  #--------- Confidence interval estimation ---------#
+  if(!do.ci.estim){
+    ci_estimates <- NA
+  } else {
+    
+    if(verbose){ message('Calculating confidence intervals...') }
+    resampleFeatureVector <- function(counts, n=ci.estim.iters){
+      #counts=features_split$snv[1,]
+      counts_expanded <- rep(1:length(counts), counts)
+      
+      new_counts_template <- structure(rep(0,length(counts)), names=1:length(counts))
+      
+      m_new_counts <- do.call(rbind,lapply(1:n, function(i){
+        tab <- table( sample(counts_expanded,length(counts_expanded),replace=T) )
+        new_counts <- new_counts_template
+        new_counts[names(tab)] <- tab
+        unname(new_counts)
+      }))
+      
+      colnames(m_new_counts) <- names(counts)
+      return(m_new_counts)
+    }
+    
+    if(verbose){ pb <- txtProgressBar(max=nrow(features), style=3, width=50) }
+    
+    ci_estimates <- lapply(1:nrow(features), function(i){
+      #i=1
+      
+      if(verbose){ setTxtProgressBar(pb, i) }
+      
+      ## Resample each feature type (i.e. SNV/indel/SV separately)
+      features_resampled <- list(
+        snv=resampleFeatureVector(features_split$snv[i,]),
+        indel=resampleFeatureVector(features_split$indel[i,]),
+        sv=resampleFeatureVector(features_split$sv[i,])
+      )
+      
+      pred <- doPredict(
+        mutSigExtractor::transformContexts(
+          features_resampled,
+          simplify.types = c('snv','indel'),
+          rel.types = c('snv','indel','sv')
+        )
+      )
+      
+      unlist(lapply(pred,function(pred.class){ ## Unlist automatically prepends pred class names
+        quantile(pred.class, ci.quantiles)
+      }))
+      
+    })
+    message('\n')
+    ci_estimates <- do.call(rbind, ci_estimates)
+    rownames(ci_estimates) <- rownames(features)
+  }
   
   #--------- QC ---------#
+  if(verbose){ message('Performing QC checks...') }
   qc <- list()
   qc$has_msi <- with(features_split,{
     rowSums(indel[,grep('rep',colnames(indel)),drop=F]) > min.msi.indel.rep
@@ -72,22 +154,6 @@ chordPredict <- function(
   qc <- as.data.frame(qc)
   
   failed_qc <- with(qc,{ has_msi | low_indel_load | low_sv_load })
-  
-  if(verbose & sum(failed_qc)>0){
-    
-    qc_messages <- list(
-      has_msi=paste0('  Critical: ', sum(qc$has_msi),' with MSI (>',min.msi.indel.rep,' indels within repeats)\n'),
-      low_indel_load=paste0('  Critical: ',sum(qc$low_indel_load),' with <', min.indel.load,' indels\n'),
-      low_sv_load=paste0('  Non-critical: ', sum(qc$low_sv_load), ' with <', min.sv.load, ' SVs')
-    )
-    
-    message(
-      sum(failed_qc),' sample(s) failed QC:\n', 
-      if(sum(qc$has_msi)>0){ qc_messages$has_msi } else { '' },
-      if(sum(qc$low_indel_load)>0){ qc_messages$low_indel_load } else { '' },
-      if(sum(qc$low_sv_load)){ qc_messages$low_sv_load } else { '' }
-    )
-  }
   
   ## Informative QC tags
   if(!detailed.remarks){
@@ -126,14 +192,16 @@ chordPredict <- function(
     remarks_hrd_type=qc_hrd_type
   )
   
-  #--------- Determine if sample is HRD (only if sample has enough indels) ---------#
+  #--------- Determine HR status ---------#
+  if(verbose){ message('Finalizing output...') }
+  
+  ## Is HRD?
   df$hr_status <- ifelse(
     df$p_hrd >= hrd.cutoff,
     'HR_deficient','HR_proficient'
   )
-  df$hr_status[ qc$low_indel_load | qc$has_msi ] <- 'cannot_be_determined'
   
-  #--------- Determine HRD type ---------#
+  ## Which HRD subtype?
   df$hrd_type <- unlist(
     Map(function(p_BRCA1, p_BRCA2, p_hrd){
       if(p_hrd>=hrd.cutoff){
@@ -143,22 +211,53 @@ chordPredict <- function(
       }
     }, df$p_BRCA1, df$p_BRCA2, df$p_hrd)
   )
-  df$hrd_type[ qc$low_sv_load | qc$low_indel_load ] <- 'cannot_be_determined'
   
+  ## Add qc
   df <- cbind(df, qc_out)
   
-  if(show.features){
-    df <- merge(
-      cbind(sample=rownames(df),df),
-      cbind(sample=rownames(df),features_processed),
-      by='sample'
-    )
-  } else {
-    df <- cbind(sample=rownames(df),df); rownames(df) <- NULL
-  }
+  ## Clean up tags
+  df$hr_status[ qc$low_indel_load | qc$has_msi ] <- 'cannot_be_determined'
   
-  return(df)
+  df$hrd_type[ qc$low_sv_load ] <- 'cannot_be_determined'
+  df$hrd_type[ df$hr_status %in% c('HR_proficient','cannot_be_determined') ] <- 'none'
+  df$remarks_hrd_type[ df$hr_status=='HR_proficient' ] <- ''
+  
+  #--------- Gather outputs ---------#
+  out <- list(
+    predictions=df[,!grepl('^p_none',colnames(df))],
+    ci_estimates=ci_estimates[,!grepl('^p_none',colnames(ci_estimates))],
+    features=features_processed,
+    hrd_cutoff=hrd.cutoff
+  )
+  class(out) <- 'chord.predictions'
+
+  return(out)
 }
 
+## Custom print function
+print.chord.predictions <- function(x, ...){
+  df <- x$predictions
+  
+  cat(sprintf('CHORD output for %s samples\n\n',nrow(df)))
+  cat(sprintf('HRD cutoff: >=%s\n\n', x$hrd_cutoff))
+  
+  cat(
+    'Summary:\n',
+    sprintf('%s samples were predicted HRD\n',sum(df$hr_status=='HR_deficient')),
+    sprintf('%s samples were predicted HRP\n',sum(df$hr_status=='HR_proficient')),
+    sprintf('For %s samples, HR status could not be determined\n',sum(df$hr_status=='cannot_be_determined')),
+    sprintf('For %s samples, HRD subtype could not be determined\n',sum(df$hrd_type=='cannot_be_determined')),
+    '\n'
+  )
+  
+  cat(
+    'Objects in output:\n',
+    '$predictions\tHRD, HRD subtype probabilities, and QC remarks\n',
+    '$ci_estimates\tConfidence interval estimates\n',
+    '$features\tFeature matrix used for prediction\n'
+  )
+  
+  cat('\n')
+}
 
 
