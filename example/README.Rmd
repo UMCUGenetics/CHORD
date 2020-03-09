@@ -258,7 +258,7 @@ merged_contexts[,1:5]
 Once we have the context matrix ready, we can use it for predicting HRD.
 ```{r message=FALSE, warning=FALSE}
 chord_output <- chordPredict(merged_contexts, verbose=F)
-write.table(chord_output$predictions, 'output/chord_pred.txt', sep='\t', quote=F)
+write.table(chord_output$pred, 'output/chord_pred.txt', sep='\t', quote=F)
 
 chord_output
 ```
@@ -266,7 +266,7 @@ chord_output
 #### Main output
 To extract the HRD probabilities:
 ```{r message=FALSE, warning=FALSE}
-chord_output$predictions
+chord_output$pred
 ```
 
 CHORD outputs the probability of:
@@ -294,18 +294,24 @@ met, ```hrd_type``` will be ```cannot_be_determined```, and ```remarks_hr_status
 The user may of course ignore these remarks and proceed with using the raw probabilities 
 outputted by CHORD (```p_hrd``` and/or ```p_BRCA1```/```pBRCA2```).
 
-#### Confidence intervals: stability of predictions
-To extract the confidence interval estimates:
+#### Stability of predictions
+To extract the bootstrap predictions:
 ```{r message=FALSE, warning=FALSE}
-chord_output$ci_estimates
+chord_output$bootstrap_pred
 ```
 
-The confidence intervals (CI) give an idea of the likely error of each prediction probability (i.e.
-errorbar upper and lower values). 
+To assess the stability of prediction for each sample, bootstrapping is performed by resampling the
+feature vector 20 times and calculating HRD probabilities for each iteration. The probabilities at
+the 5%, 50% 95% quantiles are then calculated. In other words, the bootstraped predictions provide 
+a lower (5% quantile) and upper (95% quantile) error from the median probability (50% quantile) for 
+each prediction class.
 
-CI estimates are determined by resampling the feature vector for each sample 20 times and
-calculating HRD probabilities for each iteration. The probabilities at the 5% and 95% quantiles are
-then calculated.
+The user may choose to use the median probabilities in place of the single probabilities (as in
+```chord_output$pred```). This can give more accurate HRD probabilities, especially for samples 
+with low mutational load.
+
+Note that performing the bootstrapping is computationally expensive. Bootstrapping can be turned off
+by specifying ```do.bootstrap=F``` to ```chordPredict()```.
 
 ## 2. Running CHORD from dataframes
 To run CHORD on non-standard vcfs or from other sources, we can create dataframes that 
@@ -394,7 +400,7 @@ contexts[,c(1:4, 97:104, 127:131),drop=F]
 Lastly, make the HRD prediction.
 ```{r message=FALSE, warning=FALSE}
 chord_output <- chordPredict(contexts, verbose=F)
-chord_output$predictions
+chord_output$pred
 ```
 
 Please refer back to section 1 of the tutorial for interpreting CHORD's output.
