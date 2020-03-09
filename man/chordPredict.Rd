@@ -11,10 +11,10 @@ chordPredict(
   min.indel.load = 50,
   min.sv.load = 30,
   min.msi.indel.rep = 14000,
-  do.ci.estim = T,
-  ci.estim.iters = 20,
-  ci.quantiles = c(0.05, 0.95),
-  detailed.remarks = F,
+  do.bootstrap = T,
+  bootstrap.iters = 20,
+  bootstrap.quantiles = c(0.05, 0.5, 0.95),
+  detailed.remarks = T,
   verbose = T
 )
 }
@@ -38,14 +38,14 @@ hrd_type==NA (HRD type could not be confidently determined).}
 \item{min.msi.indel.rep}{Default=14000 (changing this value is not advised). Samples with more 
 indels within repeats than this threshold will be considered to have microsatellite instability.}
 
-\item{do.ci.estim}{Perform confidence interval estimation? NOTE: this is computationally expensive. 
-Resamples the feature vector for each sample (number of times provided by ci.estim.iters) and
-calculates HRD probabilities for each iteration. Returns the probabilities at the quantiles
-specifying in ci.quantiles}
+\item{do.bootstrap}{Test the stability of prediction probabilities? NOTE: this is computationally
+expensive. Resamples the feature vector for each sample (number of times provided by
+bootstrap.iters) and calculates HRD probabilities for each iteration. Returns the probabilities
+at the quantiles specifying in bootstrap.quantiles}
 
-\item{ci.estim.iters}{Number of resampling iterations for determining the confidence intervals}
+\item{bootstrap.iters}{Number of resampling iterations for determining the confidence intervals}
 
-\item{ci.quantiles}{A numeric vector of length 2 specifying the quantiles used to calculate the 
+\item{bootstrap.quantiles}{A numeric vector of length 2 specifying the quantiles used to calculate the 
 confidence intervals}
 
 \item{detailed.remarks}{If TRUE, shows min.indel.load and min.sv.load numbers in the remarks columns}
