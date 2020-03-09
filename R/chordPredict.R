@@ -15,12 +15,12 @@
 #' hrd_type==NA (HRD type could not be confidently determined).
 #' @param min.msi.indel.rep Default=14000 (changing this value is not advised). Samples with more 
 #' indels within repeats than this threshold will be considered to have microsatellite instability.
-#' @param do.ci.estim Perform confidence interval estimation? NOTE: this is computationally expensive. 
-#' Resamples the feature vector for each sample (number of times provided by ci.estim.iters) and
-#' calculates HRD probabilities for each iteration. Returns the probabilities at the quantiles
-#' specifying in ci.quantiles
-#' @param ci.estim.iters Number of resampling iterations for determining the confidence intervals
-#' @param ci.quantiles A numeric vector of length 2 specifying the quantiles used to calculate the 
+#' @param do.bootstrap Test the stability of prediction probabilities? NOTE: this is computationally
+#' expensive. Resamples the feature vector for each sample (number of times provided by
+#' bootstrap.iters) and calculates HRD probabilities for each iteration. Returns the probabilities
+#' at the quantiles specifying in bootstrap.quantiles
+#' @param bootstrap.iters Number of resampling iterations for determining the confidence intervals
+#' @param bootstrap.quantiles A numeric vector of length 2 specifying the quantiles used to calculate the 
 #' confidence intervals
 #' @param detailed.remarks If TRUE, shows min.indel.load and min.sv.load numbers in the remarks columns
 #' @param verbose Show messages?
@@ -46,13 +46,13 @@ chordPredict <- function(
   min.indel.load=50, min.sv.load=30, min.msi.indel.rep=14000,
   
   ## Confidence interval estimation
-  do.ci.estim=T, ci.estim.iters=20, ci.quantiles=c(0.05,0.95),
+  do.bootstrap=T, bootstrap.iters=20, bootstrap.quantiles=c(0.05, 0.5, 0.95),
   
   ## Other
   detailed.remarks=T, verbose=T
 ){
   
-  #features=read.delim('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/output/merged_contexts.txt', check.names=F)
+  # features=read.delim('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/output/merged_contexts.txt', check.names=F)
   
   # features=readRDS('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/HMF_DR010_DR047/matrices/merged_contexts.rds')
   # features=do.call(cbind, unname(features))
@@ -87,13 +87,13 @@ chordPredict <- function(
   
   df <- doPredict(features_processed)
   
-  #--------- Confidence interval estimation ---------#
-  if(!do.ci.estim){
-    ci_estimates <- NA
+  #--------- Bootstrap predictions ---------#
+  if(!do.bootstrap){
+    bootstrap_pred <- NA
   } else {
     
-    if(verbose){ message('Calculating confidence intervals...') }
-    resampleFeatureVector <- function(counts, n=ci.estim.iters){
+    if(verbose){ message('Performing bootstrap predictions...') }
+    resampleFeatureVector <- function(counts, n=bootstrap.iters){
       #counts=features_split$snv[1,]
       counts_expanded <- rep(1:length(counts), counts)
       
@@ -112,7 +112,7 @@ chordPredict <- function(
     
     if(verbose){ pb <- txtProgressBar(max=nrow(features), style=3, width=50) }
     
-    ci_estimates <- lapply(1:nrow(features), function(i){
+    bootstrap_pred <- lapply(1:nrow(features), function(i){
       #i=1
       
       if(verbose){ setTxtProgressBar(pb, i) }
@@ -133,13 +133,13 @@ chordPredict <- function(
       )
       
       unlist(lapply(pred,function(pred.class){ ## Unlist automatically prepends pred class names
-        quantile(pred.class, ci.quantiles)
+        quantile(pred.class, bootstrap.quantiles)
       }))
       
     })
     message('\n')
-    ci_estimates <- do.call(rbind, ci_estimates)
-    rownames(ci_estimates) <- rownames(features)
+    bootstrap_pred <- do.call(rbind, bootstrap_pred)
+    rownames(bootstrap_pred) <- rownames(features)
   }
   
   #--------- QC ---------#
@@ -224,8 +224,8 @@ chordPredict <- function(
   
   #--------- Gather outputs ---------#
   out <- list(
-    predictions=df[,!grepl('^p_none',colnames(df))],
-    ci_estimates=ci_estimates[,!grepl('^p_none',colnames(ci_estimates))],
+    pred=df[,!grepl('^p_none',colnames(df))],
+    bootstrap_pred=bootstrap_pred[,!grepl('^p_none',colnames(bootstrap_pred))],
     features=features_processed,
     hrd_cutoff=hrd.cutoff
   )
@@ -236,7 +236,7 @@ chordPredict <- function(
 
 ## Custom print function
 print.chord.predictions <- function(x, ...){
-  df <- x$predictions
+  df <- x$pred
   
   cat(sprintf('CHORD output for %s samples\n\n',nrow(df)))
   cat(sprintf('HRD cutoff: >=%s\n\n', x$hrd_cutoff))
@@ -252,9 +252,9 @@ print.chord.predictions <- function(x, ...){
   
   cat(
     'Objects in output:\n',
-    '$predictions\tHRD, HRD subtype probabilities, and QC remarks\n',
-    '$ci_estimates\tConfidence interval estimates\n',
-    '$features\tFeature matrix used for prediction\n'
+    '$pred: HRD, HRD subtype probabilities, and QC remarks\n',
+    '$bootstrap_pred: Predictions from feature set bootstrapping\n',
+    '$features: Feature matrix used for prediction\n'
   )
   
   cat('\n')
