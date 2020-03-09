@@ -7,11 +7,13 @@
 chordPredict(
   features,
   rf.model = CHORD,
-  show.features = F,
   hrd.cutoff = 0.5,
   min.indel.load = 50,
   min.sv.load = 30,
   min.msi.indel.rep = 14000,
+  do.ci.estim = T,
+  ci.estim.iters = 20,
+  ci.quantiles = c(0.05, 0.95),
   detailed.remarks = F,
   verbose = T
 )
@@ -21,8 +23,6 @@ chordPredict(
 and SV context counts.}
 
 \item{rf.model}{The random forest model. Defaults to CHORD.}
-
-\item{show.features}{Show the mutation context matrix in the output table?}
 
 \item{hrd.cutoff}{Default=0.5. Samples greater or equal to this cutoff will be marked as HRD 
 (is_hrd==TRUE).}
@@ -38,13 +38,22 @@ hrd_type==NA (HRD type could not be confidently determined).}
 \item{min.msi.indel.rep}{Default=14000 (changing this value is not advised). Samples with more 
 indels within repeats than this threshold will be considered to have microsatellite instability.}
 
+\item{do.ci.estim}{Perform confidence interval estimation? NOTE: this is computationally expensive. 
+Resamples the feature vector for each sample (number of times provided by ci.estim.iters) and
+calculates HRD probabilities for each iteration. Returns the probabilities at the quantiles
+specifying in ci.quantiles}
+
+\item{ci.estim.iters}{Number of resampling iterations for determining the confidence intervals}
+
+\item{ci.quantiles}{A numeric vector of length 2 specifying the quantiles used to calculate the 
+confidence intervals}
+
 \item{detailed.remarks}{If TRUE, shows min.indel.load and min.sv.load numbers in the remarks columns}
 
-\item{verbose}{Show messages/warnings?}
+\item{verbose}{Show messages?}
 }
 \value{
-A dataframe containing per sample the probabilities of BRCA1-type and BRCA2-type HRD, and
-HRD (= BRCA1-type HRD + BRCA2-type HRD)
+A list containing the HRD probabilities, confidence interval estimates, and input features
 }
 \description{
 A wrapper for predict.randomForest() from the randomForest package

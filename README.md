@@ -303,60 +303,99 @@ merged_contexts[,1:5]
 Once we have the context matrix ready, we can use it for predicting HRD.
 
 ``` r
-pred <- chordPredict(merged_contexts, verbose=F)
-write.table(pred, 'output/chord_pred.txt', sep='\t', quote=F)
+chord_output <- chordPredict(merged_contexts, verbose=F)
+write.table(chord_output$predictions, 'output/chord_pred.txt', sep='\t', quote=F)
 
-pred
+chord_output
 ```
 
-    ##    sample p_none p_BRCA1 p_BRCA2 p_hrd            hr_status
-    ## 1 PD10010  1.000   0.000   0.000 0.000        HR_proficient
-    ## 2 PD11352  1.000   0.000   0.000 0.000        HR_proficient
-    ## 3  PD3905  0.060   0.924   0.016 0.940         HR_deficient
-    ## 4  PD4116  0.102   0.106   0.792 0.898         HR_deficient
-    ## 5  PD7344  0.998   0.000   0.002 0.002 cannot_be_determined
-    ##               hrd_type remarks_hr_status remarks_hrd_type
-    ## 1                 none                                   
-    ## 2 cannot_be_determined                        low_sv_load
-    ## 3           BRCA1_type                                   
-    ## 4           BRCA2_type                                   
-    ## 5 cannot_be_determined    low_indel_load
-
-### Interpreting the output
+    ## CHORD output for 5 samples
+    ## 
+    ## HRD cutoff: >=0.5
+    ## 
+    ## Summary:
+    ##  2 samples were predicted HRD
+    ##  2 samples were predicted HRP
+    ##  For 1 samples, HR status could not be determined
+    ##  For 0 samples, HRD subtype could not be determined
+    ##  
+    ## Objects in output:
+    ##  $predictions    HRD, HRD subtype probabilities, and QC remarks
+    ##  $ci_estimates   Confidence interval estimates
+    ##  $features   Feature matrix used for prediction
 
 #### Main output
+
+To extract the HRD
+    probabilities:
+
+``` r
+chord_output$predictions
+```
+
+    ##         p_BRCA1 p_BRCA2 p_hrd            hr_status   hrd_type remarks_hr_status
+    ## PD10010   0.000   0.000 0.000        HR_proficient       none                  
+    ## PD11352   0.000   0.000 0.000        HR_proficient       none                  
+    ## PD3905    0.924   0.016 0.940         HR_deficient BRCA1_type                  
+    ## PD4116    0.106   0.792 0.898         HR_deficient BRCA2_type                  
+    ## PD7344    0.000   0.002 0.002 cannot_be_determined       none        <50 indels
+    ##         remarks_hrd_type
+    ## PD10010                 
+    ## PD11352                 
+    ## PD3905                  
+    ## PD4116                  
+    ## PD7344
 
 CHORD outputs the probability of:
 
   - HRD: `p_hrd`
   - BRCA1-type HRD: `p_BRCA1`
   - BRCA2-type HRD: `p_BRCA2`
-  - Not HRD: `p_none`
 
-Note that `p_hrd` = `p_BRCA1` + `p_BRCA2`. Furthermore, `p_none` +
-`p_BRCA1` + `p_BRCA2` = 1.
-
-`hr_status` tells us if a sample is HR deficient (`p_hrd` **\>= 0.5 (the
-HRD classification threshold)**) or proficient. If a sample is HRD, then
-`hrd_type` will tell us if the sample has BRCA1-type HRD or BRCA2-type
-HRD (=max(`p_BRCA1`,`p_BRCA2`)).
+`hr_status` tells us if a sample is HR deficient (`p_hrd` \>= 0.5) or
+proficient. If a sample is HRD, then `hrd_type` will tell us if the
+sample has BRCA1-type HRD or BRCA2-type HRD (=max(`p_BRCA1`,`p_BRCA2`)).
 
 #### Pre-requisites for accurate HRD prediction
 
-Under `remarks_hr_status`, we can see that PD7344 has `low_indel_load`.
-CHORD requires \>=50 indels to accurately determine whether a sample is
-HRD. Therefore, HRD subtype can not be determined for this sample, and
-thus `hr_status` is `cannot_be_determined`.
+CHORD requires **\>=50 indels** to accurately determine whether a sample
+is HRD. If this criterion is not met, `hr_status` will be
+`cannot_be_determined` and `remarks_hr_status` will be `<50 indels`.
 
-Also under `remarks_hrd_type`, we can see that PD11352 has
-`low_sv_load`. CHORD requires \>=30 SVs to accurately determine HRD
-subtype. Thus, while this sample had sufficient number of indels to
-determine HRD, the number of SVs was not sufficient, and therefore
-`hrd_type` is `cannot_be_determined`.
+CHORD **cannot be applied to MSI samples**. If an MSI sample is
+detected, `hr_status` will be `cannot_be_determined` and
+`remarks_hr_status` will be `Has MSI (>14000 indel.rep)`
+
+If a sample is HRD, CHORD requires **\>=30 SVs** to accurately determine
+HRD subtype. If this criterion is not met, `hrd_type` will be
+`cannot_be_determined`, and `remarks_hr_status` will be `<30 SVs`.
 
 The user may of course ignore these remarks and proceed with using the
 raw probabilities outputted by CHORD (`p_hrd` and/or
 `p_BRCA1`/`pBRCA2`).
+
+#### Confidence intervals: stability of predictions
+
+To extract the confidence interval
+    estimates:
+
+``` r
+chord_output$ci_estimates
+```
+
+    ##         p_BRCA1.5% p_BRCA1.95% p_BRCA2.5% p_BRCA2.95% p_hrd.5% p_hrd.95%
+    ## PD10010     0.0000      0.0090     0.0000      0.0021   0.0000    0.0090
+    ## PD11352     0.0000      0.0000     0.0000      0.0000   0.0000    0.0000
+    ## PD3905      0.6858      0.9360     0.0058      0.0324   0.6960    0.9401
+    ## PD4116      0.0978      0.1181     0.7698      0.7961   0.8817    0.8981
+    ## PD7344      0.0000      0.0121     0.0000      0.0101   0.0000    0.0163
+
+The confidence intervals (CI) give an idea of the likely error of each
+prediction probability ( i.e. errorbar upper and lower values).
+
+CI estimates are determined by resampling the feature vector for each
+sample 20 times and calculating HRD probabilities for each iteration.
+The probabilities at the 5% and 95% quantiles are then calculated.
 
 ## 2\. Running CHORD from dataframes
 
@@ -510,14 +549,14 @@ contexts[,c(1:4, 97:104, 127:131),drop=F]
 Lastly, make the HRD prediction.
 
 ``` r
-pred <- chordPredict(contexts)
-pred
+chord_output <- chordPredict(contexts, verbose=F)
+chord_output$predictions
 ```
 
-    ##   sample p_none p_BRCA1 p_BRCA2 p_hrd    hr_status   hrd_type remarks_hr_status
-    ## 1 PD3905   0.06   0.924   0.016  0.94 HR_deficient BRCA1_type                  
-    ##   remarks_hrd_type
-    ## 1
+    ##        p_BRCA1 p_BRCA2 p_hrd    hr_status   hrd_type remarks_hr_status
+    ## PD3905   0.924   0.016  0.94 HR_deficient BRCA1_type                  
+    ##        remarks_hrd_type
+    ## PD3905
 
 Please refer back to section 1 of the tutorial for interpreting CHORD’s
 output.
