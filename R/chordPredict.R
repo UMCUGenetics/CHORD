@@ -23,9 +23,10 @@
 #' @param bootstrap.quantiles A numeric vector of length 2 specifying the quantiles used to calculate the 
 #' confidence intervals
 #' @param detailed.remarks If TRUE, shows min.indel.load and min.sv.load numbers in the remarks columns
+#' @param show.features If TRUE, appends features to output
 #' @param verbose Show messages?
 #'
-#' @return A list containing the HRD probabilities, confidence interval estimates, and input features
+#' @return A dataframe containing the HRD probabilities, bootstrap probabilities, and input features
 #' @export
 #' 
 #' @examples
@@ -49,7 +50,7 @@ chordPredict <- function(
   do.bootstrap=T, bootstrap.iters=20, bootstrap.quantiles=c(0.05, 0.5, 0.95),
   
   ## Other
-  detailed.remarks=T, verbose=T
+  detailed.remarks=T, show.features=T, verbose=T
 ){
   
   # features=read.delim('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/output/merged_contexts.txt', check.names=F)
@@ -81,6 +82,7 @@ chordPredict <- function(
     df <- df[,c('none','BRCA1','BRCA2')]
     colnames(df) <- paste0('p_',colnames(df))
     df$p_hrd <- df$p_BRCA1 + df$p_BRCA2
+    #df <- cbind(sample=rownames(df), df); rownames(df) <- NULL
     
     return(df)
   }
@@ -88,10 +90,7 @@ chordPredict <- function(
   df <- doPredict(features_processed)
   
   #--------- Bootstrap predictions ---------#
-  if(!do.bootstrap){
-    bootstrap_pred <- NA
-  } else {
-    
+  if(do.bootstrap){
     if(verbose){ message('Performing bootstrap predictions...') }
     resampleFeatureVector <- function(counts, n=bootstrap.iters){
       #counts=features_split$snv[1,]
@@ -140,6 +139,7 @@ chordPredict <- function(
     message('\n')
     bootstrap_pred <- do.call(rbind, bootstrap_pred)
     rownames(bootstrap_pred) <- rownames(features)
+    #bootstrap_pred <- bootstrap_pred[,!grepl('^p_none',colnames(bootstrap_pred))]
   }
   
   #--------- QC ---------#
@@ -222,42 +222,20 @@ chordPredict <- function(
   df$hrd_type[ df$hr_status %in% c('HR_proficient','cannot_be_determined') ] <- 'none'
   df$remarks_hrd_type[ df$hr_status=='HR_proficient' ] <- ''
   
+  #df <- df[,!grepl('^p_none',colnames(df))] ## Remove redunant 'none' class
+  
   #--------- Gather outputs ---------#
-  out <- list(
-    pred=df[,!grepl('^p_none',colnames(df))],
-    bootstrap_pred=bootstrap_pred[,!grepl('^p_none',colnames(bootstrap_pred))],
-    features=features_processed,
-    hrd_cutoff=hrd.cutoff
-  )
-  class(out) <- 'chord.predictions'
+  out <- cbind(sample=rownames(df), df)
+  if(do.bootstrap){ out <- cbind(out, bootstrap_pred) }
+  if(show.features){ out <- cbind(out, features_processed) }
+  out <- out[,!grepl('^p_none',colnames(out))] ## Remove redunant 'none' class
+  rownames(out) <- NULL
+  
+  #class(out) <- 'chord.predictions'
 
   return(out)
 }
 
-## Custom print function
-print.chord.predictions <- function(x, ...){
-  df <- x$pred
-  
-  cat(sprintf('CHORD output for %s samples\n\n',nrow(df)))
-  cat(sprintf('HRD cutoff: >=%s\n\n', x$hrd_cutoff))
-  
-  cat(
-    'Summary:\n',
-    sprintf('%s samples were predicted HRD\n',sum(df$hr_status=='HR_deficient')),
-    sprintf('%s samples were predicted HRP\n',sum(df$hr_status=='HR_proficient')),
-    sprintf('For %s samples, HR status could not be determined\n',sum(df$hr_status=='cannot_be_determined')),
-    sprintf('For %s samples, HRD subtype could not be determined\n',sum(df$hrd_type=='cannot_be_determined')),
-    '\n'
-  )
-  
-  cat(
-    'Objects in output:\n',
-    '$pred: HRD, HRD subtype probabilities, and QC remarks\n',
-    '$bootstrap_pred: Predictions from feature set bootstrapping\n',
-    '$features: Feature matrix used for prediction\n'
-  )
-  
-  cat('\n')
-}
+
 
 
