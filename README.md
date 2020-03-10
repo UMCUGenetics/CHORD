@@ -300,51 +300,34 @@ merged_contexts[,1:5]
 
 ### Predicting HRD and interpreting CHORD’s output
 
-Once we have the context matrix ready, we can use it for predicting HRD.
+Once we have the context matrix ready, we can use it for predicting
+HRD.
 
 ``` r
-chord_output <- chordPredict(merged_contexts, verbose=F)
-write.table(chord_output$pred, 'output/chord_pred.txt', sep='\t', quote=F)
-
-chord_output
+chord_output <- chordPredict(merged_contexts, show.features=F, verbose=F)
+write.table(chord_output, 'output/chord_pred.txt', sep='\t', quote=F)
 ```
-
-    ## CHORD output for 5 samples
-    ## 
-    ## HRD cutoff: >=0.5
-    ## 
-    ## Summary:
-    ##  2 samples were predicted HRD
-    ##  2 samples were predicted HRP
-    ##  For 1 samples, HR status could not be determined
-    ##  For 0 samples, HRD subtype could not be determined
-    ##  
-    ## Objects in output:
-    ##  $pred: HRD, HRD subtype probabilities, and QC remarks
-    ##  $bootstrap_pred: Predictions from feature set bootstrapping
-    ##  $features: Feature matrix used for prediction
 
 #### Main output
 
-To extract the HRD
-    probabilities:
+To extract the HRD probabilities:
 
 ``` r
-chord_output$pred
+chord_output[,1:8]
 ```
 
-    ##         p_BRCA1 p_BRCA2 p_hrd            hr_status   hrd_type remarks_hr_status
-    ## PD10010   0.000   0.000 0.000        HR_proficient       none                  
-    ## PD11352   0.000   0.000 0.000        HR_proficient       none                  
-    ## PD3905    0.924   0.016 0.940         HR_deficient BRCA1_type                  
-    ## PD4116    0.106   0.792 0.898         HR_deficient BRCA2_type                  
-    ## PD7344    0.000   0.002 0.002 cannot_be_determined       none        <50 indels
-    ##         remarks_hrd_type
-    ## PD10010                 
-    ## PD11352                 
-    ## PD3905                  
-    ## PD4116                  
-    ## PD7344
+    ##    sample p_BRCA1 p_BRCA2 p_hrd            hr_status   hrd_type
+    ## 1 PD10010   0.000   0.000 0.000        HR_proficient       none
+    ## 2 PD11352   0.000   0.000 0.000        HR_proficient       none
+    ## 3  PD3905   0.924   0.016 0.940         HR_deficient BRCA1_type
+    ## 4  PD4116   0.106   0.792 0.898         HR_deficient BRCA2_type
+    ## 5  PD7344   0.000   0.002 0.002 cannot_be_determined       none
+    ##   remarks_hr_status remarks_hrd_type
+    ## 1                                   
+    ## 2                                   
+    ## 3                                   
+    ## 4                                   
+    ## 5        <50 indels
 
 CHORD outputs the probability of:
 
@@ -380,21 +363,21 @@ To extract the bootstrap
     predictions:
 
 ``` r
-chord_output$bootstrap_pred
+chord_output[,9:ncol(chord_output)]
 ```
 
-    ##         p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50% p_BRCA2.95%
-    ## PD10010     0.0000       0.000      0.0087     0.0000       0.000      0.0022
-    ## PD11352     0.0000       0.000      0.0000     0.0000       0.000      0.0000
-    ## PD3905      0.6923       0.909      0.9341     0.0038       0.012      0.0421
-    ## PD4116      0.0978       0.106      0.1262     0.7554       0.784      0.7962
-    ## PD7344      0.0000       0.000      0.0105     0.0000       0.002      0.0141
-    ##         p_hrd.5% p_hrd.50% p_hrd.95%
-    ## PD10010   0.0000     0.002    0.0088
-    ## PD11352   0.0000     0.000    0.0000
-    ## PD3905    0.6999     0.924    0.9401
-    ## PD4116    0.8778     0.890    0.8980
-    ## PD7344    0.0000     0.002    0.0186
+    ##   p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50% p_BRCA2.95%
+    ## 1     0.0000       0.000      0.0021     0.0000       0.000      0.0021
+    ## 2     0.0000       0.000      0.0000     0.0000       0.000      0.0000
+    ## 3     0.3308       0.880      0.9302     0.0038       0.012      0.0422
+    ## 4     0.0918       0.104      0.1161     0.7778       0.788      0.7941
+    ## 5     0.0000       0.001      0.0149     0.0000       0.003      0.0262
+    ##   p_hrd.5% p_hrd.50% p_hrd.95%
+    ## 1   0.0000     0.000    0.0040
+    ## 2   0.0000     0.000    0.0000
+    ## 3   0.3346     0.909    0.9420
+    ## 4   0.8820     0.892    0.8981
+    ## 5   0.0000     0.004    0.0392
 
 To assess the stability of prediction for each sample, bootstrapping is
 performed by resampling the feature vector 20 times and calculating HRD
@@ -568,10 +551,7 @@ chord_output <- chordPredict(contexts, verbose=F)
 chord_output$pred
 ```
 
-    ##        p_BRCA1 p_BRCA2 p_hrd    hr_status   hrd_type remarks_hr_status
-    ## PD3905   0.924   0.016  0.94 HR_deficient BRCA1_type                  
-    ##        remarks_hrd_type
-    ## PD3905
+    ## NULL
 
 Please refer back to section 1 of the tutorial for interpreting CHORD’s
 output.
