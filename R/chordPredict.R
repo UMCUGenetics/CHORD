@@ -50,7 +50,7 @@ chordPredict <- function(
   do.bootstrap=T, bootstrap.iters=20, bootstrap.quantiles=c(0.05, 0.5, 0.95),
   
   ## Other
-  detailed.remarks=T, show.features=T, verbose=T
+  detailed.remarks=T, show.features=F, verbose=T
 ){
   
   # features=read.delim('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/output/merged_contexts.txt', check.names=F)
