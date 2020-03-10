@@ -257,16 +257,14 @@ merged_contexts[,1:5]
 ### Predicting HRD and interpreting CHORD's output
 Once we have the context matrix ready, we can use it for predicting HRD.
 ```{r message=FALSE, warning=FALSE}
-chord_output <- chordPredict(merged_contexts, verbose=F)
-write.table(chord_output$pred, 'output/chord_pred.txt', sep='\t', quote=F)
-
-chord_output
+chord_output <- chordPredict(merged_contexts, show.features=F, verbose=F)
+write.table(chord_output, 'output/chord_pred.txt', sep='\t', quote=F)
 ```
 
 #### Main output
 To extract the HRD probabilities:
 ```{r message=FALSE, warning=FALSE}
-chord_output$pred
+chord_output[,1:8]
 ```
 
 CHORD outputs the probability of:
@@ -297,7 +295,7 @@ outputted by CHORD (```p_hrd``` and/or ```p_BRCA1```/```pBRCA2```).
 #### Stability of predictions
 To extract the bootstrap predictions:
 ```{r message=FALSE, warning=FALSE}
-chord_output$bootstrap_pred
+chord_output[,9:ncol(chord_output)]
 ```
 
 To assess the stability of prediction for each sample, bootstrapping is performed by resampling the
