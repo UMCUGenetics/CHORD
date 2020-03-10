@@ -1,6 +1,6 @@
 sample	p_BRCA1	p_BRCA2	p_hrd	hr_status	hrd_type	remarks_hr_status	remarks_hrd_type	p_BRCA1.5%	p_BRCA1.50%	p_BRCA1.95%	p_BRCA2.5%	p_BRCA2.50%	p_BRCA2.95%	p_hrd.5%	p_hrd.50%	p_hrd.95%
-1	PD10010	0	0	0	HR_proficient	none			0	0	0.0021	0	0	0.0021	0	0	0.004
+1	PD10010	0	0	0	HR_proficient	none			0	0	0.008	0	0	0.004	0	0.002	0.008
 2	PD11352	0	0	0	HR_proficient	none			0	0	0	0	0	0	0	0	0
-3	PD3905	0.924	0.016	0.94	HR_deficient	BRCA1_type			0.3308	0.88	0.9302	0.0038	0.012	0.0422	0.3346	0.909	0.942
-4	PD4116	0.106	0.792	0.898	HR_deficient	BRCA2_type			0.0918	0.104	0.1161	0.7778	0.788	0.7941	0.882	0.892	0.8981
-5	PD7344	0	0.002	0.002	cannot_be_determined	none	<50 indels		0	0.001	0.0149	0	0.003	0.0262000000000002	0	0.004	0.0392000000000002
+3	PD3905	0.924	0.016	0.94	HR_deficient	BRCA1_type			0.5793	0.897	0.9322	0.002	0.01	0.0364	0.5946	0.92	0.9382
+4	PD4116	0.106	0.792	0.898	HR_deficient	BRCA2_type			0.0959	0.106	0.1246	0.7619	0.787	0.7921	0.8838	0.891	0.898
+5	PD7344	0	0.002	0.002	cannot_be_determined	none	<50 indels		0	0.002	0.075	0	0.003	0.1851	0	0.006	0.2601
