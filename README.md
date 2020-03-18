@@ -300,11 +300,10 @@ merged_contexts[,1:5]
 
 ### Predicting HRD and interpreting CHORD’s output
 
-Once we have the context matrix ready, we can use it for predicting
-HRD.
+Once we have the context matrix ready, we can use it for predicting HRD.
 
 ``` r
-chord_output <- chordPredict(merged_contexts, show.features=F, verbose=F)
+chord_output <- chordPredict(merged_contexts, do.bootstrap=T, verbose=F)
 write.table(chord_output, 'output/chord_pred.txt', sep='\t', quote=F)
 ```
 
@@ -367,17 +366,17 @@ chord_output[,9:ncol(chord_output)]
 ```
 
     ##   p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50% p_BRCA2.95%
-    ## 1     0.0000       0.000      0.0021     0.0000       0.000      0.0021
+    ## 1     0.0000       0.000      0.0242     0.0000       0.000      0.0023
     ## 2     0.0000       0.000      0.0000     0.0000       0.000      0.0000
-    ## 3     0.3308       0.880      0.9302     0.0038       0.012      0.0422
-    ## 4     0.0918       0.104      0.1161     0.7778       0.788      0.7941
-    ## 5     0.0000       0.001      0.0149     0.0000       0.003      0.0262
+    ## 3     0.6634       0.858      0.9341     0.0038       0.009      0.0542
+    ## 4     0.0958       0.109      0.1208     0.7653       0.783      0.7922
+    ## 5     0.0000       0.003      0.0081     0.0000       0.002      0.0121
     ##   p_hrd.5% p_hrd.50% p_hrd.95%
-    ## 1   0.0000     0.000    0.0040
+    ## 1   0.0000     0.000    0.0242
     ## 2   0.0000     0.000    0.0000
-    ## 3   0.3346     0.909    0.9420
-    ## 4   0.8820     0.892    0.8981
-    ## 5   0.0000     0.004    0.0392
+    ## 3   0.6805     0.905    0.9401
+    ## 4   0.8797     0.891    0.8960
+    ## 5   0.0000     0.005    0.0202
 
 To assess the stability of prediction for each sample, bootstrapping is
 performed by resampling the feature vector 20 times and calculating HRD
@@ -548,10 +547,15 @@ Lastly, make the HRD prediction.
 
 ``` r
 chord_output <- chordPredict(contexts, verbose=F)
-chord_output$pred
+chord_output
 ```
 
-    ## NULL
+    ##   sample p_BRCA1 p_BRCA2 p_hrd    hr_status   hrd_type remarks_hr_status
+    ## 1 PD3905   0.924   0.016  0.94 HR_deficient BRCA1_type                  
+    ##   remarks_hrd_type p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50%
+    ## 1                      0.6264       0.883      0.9321     0.0039       0.012
+    ##   p_BRCA2.95% p_hrd.5% p_hrd.50% p_hrd.95%
+    ## 1      0.0576   0.6291     0.906     0.942
 
 Please refer back to section 1 of the tutorial for interpreting CHORD’s
 output.
