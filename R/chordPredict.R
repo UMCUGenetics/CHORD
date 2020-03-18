@@ -47,7 +47,7 @@ chordPredict <- function(
   min.indel.load=50, min.sv.load=30, min.msi.indel.rep=14000,
   
   ## Confidence interval estimation
-  do.bootstrap=T, bootstrap.iters=20, bootstrap.quantiles=c(0.05, 0.5, 0.95),
+  do.bootstrap=F, bootstrap.iters=20, bootstrap.quantiles=c(0.05, 0.5, 0.95),
   
   ## Other
   detailed.remarks=T, show.features=F, verbose=T
@@ -92,6 +92,7 @@ chordPredict <- function(
   #--------- Bootstrap predictions ---------#
   if(do.bootstrap){
     if(verbose){ message('Performing bootstrap predictions...') }
+    
     resampleFeatureVector <- function(counts, n=bootstrap.iters){
       #counts=features_split$snv[1,]
       counts_expanded <- rep(1:length(counts), counts)
