@@ -11,10 +11,11 @@ chordPredict(
   min.indel.load = 50,
   min.sv.load = 30,
   min.msi.indel.rep = 14000,
-  do.bootstrap = T,
+  do.bootstrap = F,
   bootstrap.iters = 20,
   bootstrap.quantiles = c(0.05, 0.5, 0.95),
   detailed.remarks = T,
+  show.features = F,
   verbose = T
 )
 }
@@ -50,10 +51,12 @@ confidence intervals}
 
 \item{detailed.remarks}{If TRUE, shows min.indel.load and min.sv.load numbers in the remarks columns}
 
+\item{show.features}{If TRUE, appends features to output}
+
 \item{verbose}{Show messages?}
 }
 \value{
-A list containing the HRD probabilities, confidence interval estimates, and input features
+A dataframe containing the HRD probabilities, bootstrap probabilities, and input features
 }
 \description{
 A wrapper for predict.randomForest() from the randomForest package
