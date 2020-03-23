@@ -57,7 +57,7 @@ chordPredict <- function(
   
   # features=readRDS('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/HMF_DR010_DR047/matrices/merged_contexts.rds')
   # features=do.call(cbind, unname(features))
-  # features=features[1:100,]
+  # features=features[200:300,]
   
   if(verbose){ message('Preprocessing features...') }
   ## Converts the raw signature counts from extractSigsChord() to features used by CHORD
@@ -91,56 +91,80 @@ chordPredict <- function(
   
   #--------- Bootstrap predictions ---------#
   if(do.bootstrap){
-    if(verbose){ message('Performing bootstrap predictions...') }
+    if(verbose){ message('Calculating bootstrap confidence intervals...') }
     
-    resampleFeatureVector <- function(counts, n=bootstrap.iters){
-      #counts=features_split$snv[1,]
-      counts_expanded <- rep(1:length(counts), counts)
+    resampleFeatureMatrix <- function(m, repeats=bootstrap.iters, verbose=verbose){
+      #m=features_split$sv
       
-      new_counts_template <- structure(rep(0,length(counts)), names=1:length(counts))
+      feature_ids <- as.factor(1:ncol(m)) ## Replace feature names by integers to save memory
       
-      m_new_counts <- do.call(rbind,lapply(1:n, function(i){
-        tab <- table( sample(counts_expanded,length(counts_expanded),replace=T) )
-        new_counts <- new_counts_template
-        new_counts[names(tab)] <- tab
-        unname(new_counts)
-      }))
+      resampleFeatureVector <- function(v){
+        #v=unlist(m[229,])
+        total_counts <- sum(v)
+        if(total_counts==0){ ## Prevent divide by 0 errors
+          return(
+            matrix(0, nrow=repeats, ncol=ncol(m))
+          )
+        }
+        
+        prob <- v/total_counts
+        t(replicate(
+          repeats,
+          table( sample(feature_ids, total_counts, replace=T, prob=prob) )
+        ))
+      }
       
-      colnames(m_new_counts) <- names(counts)
-      return(m_new_counts)
+      pb <- txtProgressBar(max=nrow(m), style=3)
+      out <- lapply(1:nrow(m), function(i){
+        #i=1
+        #print(i)
+        setTxtProgressBar(pb, i)
+        m_resampled <- resampleFeatureVector(m[i,])
+        colnames(m_resampled) <- colnames(m)
+        
+        return(m_resampled)
+      })
+      message('\n')
+      names(out) <- rownames(m)
+      
+      return(out)
     }
     
-    if(verbose){ pb <- txtProgressBar(max=nrow(features), style=3, width=50) }
+    ## list structure: mut type -> sample name
+    features_split_resampled <- lapply(names(features_split), function(i){
+      if(verbose){ message('> Resampling ',i,' matrix...') }
+      resampleFeatureMatrix(features_split[[i]])
+    })
+    names(features_split_resampled) <- names(features_split)
     
+    if(verbose){ message('> Performing bootstrap predictions...') }
     bootstrap_pred <- lapply(1:nrow(features), function(i){
-      #i=1
-      
-      if(verbose){ setTxtProgressBar(pb, i) }
-      
-      ## Resample each feature type (i.e. SNV/indel/SV separately)
-      features_resampled <- list(
-        snv=resampleFeatureVector(features_split$snv[i,]),
-        indel=resampleFeatureVector(features_split$indel[i,]),
-        sv=resampleFeatureVector(features_split$sv[i,])
+      #i=229
+      #print(i)
+      ## convert to: sample name --> mut type
+      l <- list(
+        snv=features_split_resampled$snv[[i]],
+        indel=features_split_resampled$indel[[i]],
+        sv=features_split_resampled$sv[[i]]
       )
       
-      pred <- doPredict(
-        mutSigExtractor::transformContexts(
-          features_resampled,
-          simplify.types = c('snv','indel'),
-          rel.types = c('snv','indel','sv')
-        )
+      ## Transform features
+      m <- mutSigExtractor::transformContexts(
+        l,
+        simplify.types = c('snv','indel'),
+        rel.types = c('snv','indel','sv')
       )
       
+      ## Predict
+      pred <- doPredict(m)
+      
+      ## Calculate quantiles
       unlist(lapply(pred,function(pred.class){ ## Unlist automatically prepends pred class names
         quantile(pred.class, bootstrap.quantiles)
       }))
-      
     })
-    message('\n')
     bootstrap_pred <- do.call(rbind, bootstrap_pred)
     rownames(bootstrap_pred) <- rownames(features)
-    #bootstrap_pred <- bootstrap_pred[,!grepl('^p_none',colnames(bootstrap_pred))]
   }
   
   #--------- QC ---------#
@@ -231,8 +255,6 @@ chordPredict <- function(
   if(show.features){ out <- cbind(out, features_processed) }
   out <- out[,!grepl('^p_none',colnames(out))] ## Remove redunant 'none' class
   rownames(out) <- NULL
-  
-  #class(out) <- 'chord.predictions'
 
   return(out)
 }
