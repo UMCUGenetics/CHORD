@@ -33,10 +33,8 @@ install.packages('randomForest')
 
 ## Install CHORD and mutSigExtractor directly from github using devtools
 install.packages("devtools")
-library(devtools)
-
-install_github('https://github.com/UMCUGenetics/mutSigExtractor/')
-install_github('https://github.com/UMCUGenetics/CHORD/')
+devtools::install_github('https://github.com/UMCUGenetics/mutSigExtractor/')
+devtools::install_github('https://github.com/UMCUGenetics/CHORD/')
 ```
 
 # Quick start
@@ -115,24 +113,22 @@ contexts <- extractSigsChord(
 ```
 
 A different reference genome than the default (BSgenome.Hsapiens.UCSC.hg19) can be used. Genomes 
-should be BSgenomes. The **name** of the BSgenome object (as a character string) is specified to
+should be BSgenomes. The **variable name** (i.e. no quotes) of the BSgenome object is specified to
 ```ref.genome```.
 ```{r eval=FALSE, error=FALSE}
 ## Make sure to install and load the desired ref genome first
-ref_genome <- 'BSgenome.Hsapiens.UCSC.hg38'
-
 install.packages('BiocManager')
-BiocManager::install(ref_genome)
+BiocManager::install('BSgenome.Hsapiens.UCSC.hg38')
 
 ## Non-default genomes need to be explicitly loaded. The default (BSgenome.Hsapiens.UCSC.hg19)
 ## is automatically loaded.
-library(ref_genome)
+library(BSgenome.Hsapiens.UCSC.hg38)
 
 ## Specify the name of the BSgenome object to the ref.genome argument
 contexts <- extractSigsChord(
   vcf.snv = '/path/to/vcf/with/snvs_and_indels/',
   df.sv = dataframe_with_svtype_and_svlen
-  ref.genome=ref_genome
+  ref.genome=BSgenome.Hsapiens.UCSC.hg38
 )
 ```
 
@@ -326,6 +322,11 @@ in the aforementioned order.
 
 We can use ```readVcfFields()``` from the ```mutSigExtractor``` package to read a vcf into R as a 
 dataframe.
+
+```{r message=FALSE, warning=FALSE}
+library(mutSigExtractor)
+```
+
 ```{r message=FALSE, warning=FALSE}
 df_snv_indel <- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c('CHROM','POS','REF','ALT'))
 ```

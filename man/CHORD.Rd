@@ -4,7 +4,9 @@
 \name{CHORD}
 \alias{CHORD}
 \title{CHORD (Classifier for Homologous Recombination Deficiency)}
-\format{An object of class \code{randomForest} of length 18.}
+\format{
+An object of class \code{randomForest} of length 18.
+}
 \usage{
 data(CHORD)
 }
