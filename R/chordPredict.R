@@ -42,6 +42,7 @@
 
 chordPredict <- function(
   features, rf.model=CHORD, hrd.cutoff=0.5, 
+  custom.trans.func=NULL,
   
   ## QC thresholds
   min.indel.load=50, min.sv.load=30, min.msi.indel.rep=14000,
@@ -54,31 +55,40 @@ chordPredict <- function(
 ){
   
   # features=read.delim('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/output/merged_contexts.txt', check.names=F)
-  
   # features=readRDS('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/HMF_DR010_DR047/matrices/merged_contexts.rds')
   # features=do.call(cbind, unname(features))
   # features=features[200:300,]
   
   if(verbose){ message('Preprocessing features...') }
   ## Converts the raw signature counts from extractSigsChord() to features used by CHORD
-  features_split <- mutSigExtractor::splitDfRegex(features, c(snv='>',indel='[a-z]{3}[.]',sv='[A-Z]{3}'))
-  features_processed <- mutSigExtractor::transformContexts(
-    features_split,
-    
-    ## Simplify indels to types only (mh: flanking microhomology, rep: within repeat regions, none: 
-    ## other indels) by ignoring indel length.
-    ## Simplify SNVs to the 6 types of base substitions (C>A, C>G, C>T, T>A, T>C, T>G) by ignoring
-    ## the immediate flanking nucleotides
-    simplify.types = c('snv','indel'),
-    
-    ## Convert absolute counts to relative counts. Calculated per variant type.
-    rel.types = c('snv','indel','sv')
-  )
+  if(is.list(features) & !is.data.frame(features)){
+    features_split <- features
+  } else {
+    features_split <- mutSigExtractor::splitDfRegex(features, c(snv='>',indel='[a-z]{3}[.]',sv='[A-Z]{3}'))
+  }
+  #features_split <- features_split[c('snv','indel','sv')] ## Remove other mut types if they exist
+  
+  if(is.null(custom.trans.func)){
+    features_processed <- mutSigExtractor::transformContexts(
+      features_split,
+      
+      ## Simplify indels to types only (mh: flanking microhomology, rep: within repeat regions, none: 
+      ## other indels) by ignoring indel length.
+      ## Simplify SNVs to the 6 types of base substitions (C>A, C>G, C>T, T>A, T>C, T>G) by ignoring
+      ## the immediate flanking nucleotides
+      simplify.types = c('snv','indel'),
+      
+      ## Convert absolute counts to relative counts. Calculated per variant type.
+      rel.types = c('snv','indel','sv')
+    )
+  } else {
+    features_processed <- custom.trans.func(features_split)
+  }
   
   #--------- Prediction ---------#
   if(verbose){ message('Calculating HRD probabilities...') }
   doPredict <- function(m){
-    df <- as.data.frame(predict(rf.model, m, type='prob'))
+    df <- as.data.frame(randomForest:::predict.randomForest(rf.model, m, type='prob'))
     df <- df[,c('none','BRCA1','BRCA2')]
     colnames(df) <- paste0('p_',colnames(df))
     df$p_hrd <- df$p_BRCA1 + df$p_BRCA2
@@ -93,7 +103,7 @@ chordPredict <- function(
   if(do.bootstrap){
     if(verbose){ message('Calculating bootstrap confidence intervals...') }
     
-    resampleFeatureMatrix <- function(m, repeats=bootstrap.iters, verbose=verbose){
+    resampleFeatureMatrix <- function(m, repeats=bootstrap.iters){
       #m=features_split$sv
       
       feature_ids <- as.factor(1:ncol(m)) ## Replace feature names by integers to save memory
@@ -114,11 +124,11 @@ chordPredict <- function(
         ))
       }
       
-      pb <- txtProgressBar(max=nrow(m), style=3)
+      if(verbose){ pb <- txtProgressBar(max=nrow(m), style=3) }
       out <- lapply(1:nrow(m), function(i){
         #i=1
         #print(i)
-        setTxtProgressBar(pb, i)
+        if(verbose){ setTxtProgressBar(pb, i) }
         m_resampled <- resampleFeatureVector(m[i,])
         colnames(m_resampled) <- colnames(m)
         
