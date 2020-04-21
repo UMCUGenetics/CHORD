@@ -8,6 +8,7 @@ chordPredict(
   features,
   rf.model = CHORD,
   hrd.cutoff = 0.5,
+  custom.trans.func = NULL,
   min.indel.load = 50,
   min.sv.load = 30,
   min.msi.indel.rep = 14000,

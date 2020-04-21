@@ -15,7 +15,7 @@ extractSigsChord(
   vcf.filters = list(snv = NA, indel = NA, sv = NA),
   sv.caller = "gridss",
   output.path = NULL,
-  ref.genome = DEFAULT_GENOME,
+  ref.genome = mutSigExtractor::DEFAULT_GENOME,
   verbose = F
 )
 }
@@ -44,9 +44,8 @@ depending on the caller. Currently supports 'manta' or 'gridss'.}
 
 \item{output.path}{If a path is specified, the output is written to this path.}
 
-\item{ref.genome}{A character naming the BSgenome reference genome. Default is
-"BSgenome.Hsapiens.UCSC.hg19". If another reference genome is indicated, it will also need to be
-installed.}
+\item{ref.genome}{A BSgenome reference genome. Default is BSgenome.Hsapiens.UCSC.hg19. If another
+reference genome is indicated, it will also need to be installed.}
 
 \item{verbose}{Whether to print progress messages}
 }
