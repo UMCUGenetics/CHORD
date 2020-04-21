@@ -36,10 +36,8 @@ install.packages('randomForest')
 
 ## Install CHORD and mutSigExtractor directly from github using devtools
 install.packages("devtools")
-library(devtools)
-
-install_github('https://github.com/UMCUGenetics/mutSigExtractor/')
-install_github('https://github.com/UMCUGenetics/CHORD/')
+devtools::install_github('https://github.com/UMCUGenetics/mutSigExtractor/')
+devtools::install_github('https://github.com/UMCUGenetics/CHORD/')
 ```
 
 # Quick start
@@ -128,25 +126,23 @@ contexts <- extractSigsChord(
 
 A different reference genome than the default
 (BSgenome.Hsapiens.UCSC.hg19) can be used. Genomes should be BSgenomes.
-The **name** of the BSgenome object (as a character string) is specified
-to `ref.genome`.
+The **variable name** (i.e. no quotes) of the BSgenome object is
+specified to `ref.genome`.
 
 ``` r
 ## Make sure to install and load the desired ref genome first
-ref_genome <- 'BSgenome.Hsapiens.UCSC.hg38'
-
 install.packages('BiocManager')
-BiocManager::install(ref_genome)
+BiocManager::install('BSgenome.Hsapiens.UCSC.hg38')
 
 ## Non-default genomes need to be explicitly loaded. The default (BSgenome.Hsapiens.UCSC.hg19)
 ## is automatically loaded.
-library(ref_genome)
+library(BSgenome.Hsapiens.UCSC.hg38)
 
 ## Specify the name of the BSgenome object to the ref.genome argument
 contexts <- extractSigsChord(
   vcf.snv = '/path/to/vcf/with/snvs_and_indels/',
   df.sv = dataframe_with_svtype_and_svlen
-  ref.genome=ref_genome
+  ref.genome=BSgenome.Hsapiens.UCSC.hg38
 )
 ```
 
@@ -366,17 +362,17 @@ chord_output[,9:ncol(chord_output)]
 ```
 
     ##   p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50% p_BRCA2.95%
-    ## 1     0.0000       0.000      0.0242     0.0000       0.000      0.0023
+    ## 1     0.0000       0.000      0.0090     0.0000       0.000      0.0002
     ## 2     0.0000       0.000      0.0000     0.0000       0.000      0.0000
-    ## 3     0.6634       0.858      0.9341     0.0038       0.009      0.0542
-    ## 4     0.0958       0.109      0.1208     0.7653       0.783      0.7922
-    ## 5     0.0000       0.003      0.0081     0.0000       0.002      0.0121
+    ## 3     0.2494       0.874      0.9303     0.0038       0.012      0.0569
+    ## 4     0.0939       0.105      0.1209     0.7635       0.786      0.7921
+    ## 5     0.0000       0.002      0.0168     0.0000       0.002      0.0199
     ##   p_hrd.5% p_hrd.50% p_hrd.95%
-    ## 1   0.0000     0.000    0.0242
+    ## 1   0.0000     0.000    0.0090
     ## 2   0.0000     0.000    0.0000
-    ## 3   0.6805     0.905    0.9401
-    ## 4   0.8797     0.891    0.8960
-    ## 5   0.0000     0.005    0.0202
+    ## 3   0.2570     0.907    0.9363
+    ## 4   0.8758     0.887    0.8981
+    ## 5   0.0000     0.006    0.0367
 
 To assess the stability of prediction for each sample, bootstrapping is
 performed by resampling the feature vector 20 times and calculating HRD
@@ -415,6 +411,10 @@ aforementioned order.
 We can use `readVcfFields()` from the `mutSigExtractor` package to read
 a vcf into R as a
 dataframe.
+
+``` r
+library(mutSigExtractor)
+```
 
 ``` r
 df_snv_indel <- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c('CHROM','POS','REF','ALT'))
@@ -552,10 +552,8 @@ chord_output
 
     ##   sample p_BRCA1 p_BRCA2 p_hrd    hr_status   hrd_type remarks_hr_status
     ## 1 PD3905   0.924   0.016  0.94 HR_deficient BRCA1_type                  
-    ##   remarks_hrd_type p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50%
-    ## 1                      0.6264       0.883      0.9321     0.0039       0.012
-    ##   p_BRCA2.95% p_hrd.5% p_hrd.50% p_hrd.95%
-    ## 1      0.0576   0.6291     0.906     0.942
+    ##   remarks_hrd_type
+    ## 1
 
 Please refer back to section 1 of the tutorial for interpreting CHORD’s
 output.

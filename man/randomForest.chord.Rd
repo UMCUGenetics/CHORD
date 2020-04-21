@@ -4,7 +4,7 @@
 \alias{randomForest.chord}
 \title{Default randomForest() settings for training CHORD}
 \usage{
-\method{randomForest}{chord}(df = hmf_training_set, colname.response = "response", ...)
+randomForest.chord(df = hmf_training_set, colname.response = "response", ...)
 }
 \arguments{
 \item{df}{A dataframe containing the features and a response (class label) column}
