@@ -11,9 +11,9 @@ Description: CHORD is a random forest model that uses the relative counts of som
 License: MIT
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 biocViews:
-Depends:
+Imports:
 	mutSigExtractor,
 	randomForest
 Suggests:
