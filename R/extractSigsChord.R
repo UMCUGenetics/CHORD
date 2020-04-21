@@ -18,9 +18,8 @@
 #' indicated which variants to keep, corresponding to the values in the vcf FILTER column. NA can be
 #' specified for each list item to ignore filtering of a vcf.
 #' @param output.path If a path is specified, the output is written to this path.
-#' @param ref.genome A character naming the BSgenome reference genome. Default is
-#' "BSgenome.Hsapiens.UCSC.hg19". If another reference genome is indicated, it will also need to be
-#' installed.
+#' @param ref.genome A BSgenome reference genome. Default is BSgenome.Hsapiens.UCSC.hg19. If another
+#' reference genome is indicated, it will also need to be installed.
 #' @param verbose Whether to print progress messages
 #'
 #' @return A 1-row data frame containing the mutational signature contributions
@@ -31,8 +30,11 @@ extractSigsChord <- function(
   df.snv=NULL, df.indel=df.snv, df.sv=NULL,
   sample.name='sample',
   vcf.filters=list(snv=NA,indel=NA,sv=NA),
-  sv.caller='gridss', output.path=NULL, ref.genome=DEFAULT_GENOME, verbose=F
+  sv.caller='gridss', output.path=NULL, ref.genome=mutSigExtractor::DEFAULT_GENOME, verbose=F
 ){
+  
+  #vcf.snv='/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/vcf/PD4116_snv_indel.vcf.gz'
+  #vcf.sv='/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/vcf/PD4116_sv.vcf.gz'
   
   if(is.null(vcf.snv) & is.null(df.snv)){
     stop('Either vcf.snv or df.snv inputs are required')
@@ -53,8 +55,8 @@ extractSigsChord <- function(
   
   if(verbose){ message('\n## SNVs') }
   if(!is.null(vcf.snv)){
-    variants$snv <- variantsFromVcf(
-      vcf.snv, mode='snv_indel', 
+    variants$snv <- mutSigExtractor::variantsFromVcf(
+      vcf.snv,
       vcf.filter=vcf.filters$snv,
       ref.genome=ref.genome,
       verbose=verbose
@@ -69,8 +71,8 @@ extractSigsChord <- function(
       if(verbose){ message('vcf file is the same for both SNVs and indels. Skipping reading vcf for indels') }
       variants$indel <- variants$snv
     } else {
-      variants$indel <- variantsFromVcf(
-        vcf.indel, mode='snv_indel', 
+      variants$indel <- mutSigExtractor::variantsFromVcf(
+        vcf.indel,
         vcf.filter=vcf.filters$indel, 
         ref.genome=ref.genome,
         verbose=verbose
@@ -87,11 +89,8 @@ extractSigsChord <- function(
   
   if(verbose){ message('\n## SVs') }
   if(!is.null(vcf.sv)){
-    variants$sv <- variantsFromVcf(
-      vcf.sv, mode='sv', 
-      vcf.filter=vcf.filters$sv, 
-      sv.caller=sv.caller
-    )
+    variants$sv <- mutSigExtractor::variantsFromVcf(vcf.sv, vcf.filter=vcf.filters$sv, vcf.fields=c('CHROM','POS','REF','ALT','FILTER','ID','INFO'))
+    variants$sv <- mutSigExtractor::getContextsSv(variants$sv, sv.caller=sv.caller)
   } else {
     variants$sv <- df.sv
   }
@@ -101,13 +100,13 @@ extractSigsChord <- function(
   sigs <- list()
   
   if(verbose){ message('\n## Single base substitutions') }
-  sigs$snv <- extractSigsSnv(df=variants$snv, output='contexts', ref.genome=ref.genome, verbose=verbose)
+  sigs$snv <- mutSigExtractor::extractSigsSnv(df=variants$snv, output='contexts', ref.genome=ref.genome, verbose=verbose)
   
   if(verbose){ message('\n## Indel contexts (types x lengths)') }
-  sigs$indel <- extractSigsIndel(df=variants$indel, ref.genome=ref.genome, verbose=verbose)
+  sigs$indel <- mutSigExtractor::extractSigsIndel(df=variants$indel, ref.genome=ref.genome, verbose=verbose)
   
   if(verbose){ message('\n## SV contexts (types x lengths)') }
-  sigs$sv <- extractSigsSv(
+  sigs$sv <- mutSigExtractor::extractSigsSv(
     df=variants$sv, sv.caller=sv.caller, output='contexts',
     sv.len.cutoffs = c(0, 10^3, 10^4, 10^5, 10^6, 10^7,Inf),
     verbose=verbose
