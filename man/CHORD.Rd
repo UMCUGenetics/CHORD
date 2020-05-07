@@ -3,17 +3,14 @@
 \docType{data}
 \name{CHORD}
 \alias{CHORD}
-\title{CHORD (Classifier for Homologous Recombination Deficiency)}
+\title{CHORD (Classifier for Homologous Recombination Deficiency) v2}
 \format{
-An object of class \code{randomForest} of length 18.
+An object of class \code{randomForest} of length 21.
 }
 \usage{
 data(CHORD)
 }
 \description{
 A random forest predictor of homologous recombination deficiency
-}
-\details{
-Version 60: 60_snvContext_svContext_allSigsRel_noSuppEvidence_customBlacklist3_noBoruta
 }
 \keyword{datasets}
