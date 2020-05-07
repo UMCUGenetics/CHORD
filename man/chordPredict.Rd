@@ -8,7 +8,7 @@ chordPredict(
   features,
   rf.model = CHORD,
   hrd.cutoff = 0.5,
-  custom.trans.func = NULL,
+  trans.func = NULL,
   min.indel.load = 50,
   min.sv.load = 30,
   min.msi.indel.rep = 14000,
@@ -28,6 +28,9 @@ and SV context counts.}
 
 \item{hrd.cutoff}{Default=0.5. Samples greater or equal to this cutoff will be marked as HRD 
 (is_hrd==TRUE).}
+
+\item{trans.func}{Function used to transform raw features. Raw features should be in the format:
+list(snv=matrix(), indel=matrix(), sv=matrix())}
 
 \item{min.indel.load}{Default=50. The minimum number of indels required to make an accurate HRD
 prediction. Samples with fewer indels than this value will be marked as is_hrd==NA (HR status 

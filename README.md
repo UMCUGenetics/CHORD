@@ -8,6 +8,17 @@ microhomology and 1-100kb structural duplications. Additionally, 1-100kb
 structural duplications are used to distinguish BRCA1-type HRD from
 BRCA2-type HRD.
 
+# Changes
+
+CHORD has been updated to v2.0. In this version, the `del.mh` feature
+(deletions with microhomology) is split into `del.mh.bimh.1` and
+`del.mh.bimh.2.5` (bases in microhomology: 1bp; 2 to \>=5bp). This was
+done to reduce false positive predictions. `del.mh.bimh.2.5` was found
+to be predictive of HRD to a greater extent than `del.mh.bimh.1`.
+Furthermore, radiation therapy was found to be associated with
+`del.mh.bimh.1`, which could result in false positive predictions for
+radiotherapy treated patients.
+
 # Reference
 
 **Pan-cancer landscape of homologous recombination deficiency**  
@@ -259,7 +270,7 @@ for(i in 1:nrow(vcf_files)){
 The `sv.caller` parameter has been included in `extractSigsChord()`
 since different SV callers report SVs in different ways.
 `extractSigsChord()` includes parsing for vcfs produced by Manta and
-GRIDSS (`sv.caller='manta'` or `sv.caller='gridss'`). If you have vcfs
+GRIDSS (`sv.caller='manta'`or `sv.caller='gridss'`). If you have vcfs
 from other SV callers, a solution is to provide the relevant data as a
 dataframe (see section 2 of the tutorial).
 
@@ -314,8 +325,8 @@ chord_output[,1:8]
     ##    sample p_BRCA1 p_BRCA2 p_hrd            hr_status   hrd_type
     ## 1 PD10010   0.000   0.000 0.000        HR_proficient       none
     ## 2 PD11352   0.000   0.000 0.000        HR_proficient       none
-    ## 3  PD3905   0.924   0.016 0.940         HR_deficient BRCA1_type
-    ## 4  PD4116   0.106   0.792 0.898         HR_deficient BRCA2_type
+    ## 3  PD3905   0.798   0.056 0.854         HR_deficient BRCA1_type
+    ## 4  PD4116   0.062   0.680 0.742         HR_deficient BRCA2_type
     ## 5  PD7344   0.000   0.002 0.002 cannot_be_determined       none
     ##   remarks_hr_status remarks_hrd_type
     ## 1                                   
@@ -362,17 +373,17 @@ chord_output[,9:ncol(chord_output)]
 ```
 
     ##   p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50% p_BRCA2.95%
-    ## 1     0.0000       0.000      0.0090     0.0000       0.000      0.0002
+    ## 1     0.0000       0.000      0.0043     0.0000       0.000      0.0021
     ## 2     0.0000       0.000      0.0000     0.0000       0.000      0.0000
-    ## 3     0.2494       0.874      0.9303     0.0038       0.012      0.0569
-    ## 4     0.0939       0.105      0.1209     0.7635       0.786      0.7921
-    ## 5     0.0000       0.002      0.0168     0.0000       0.002      0.0199
+    ## 3     0.3104       0.665      0.9226     0.0100       0.044      0.1597
+    ## 4     0.0419       0.059      0.0849     0.6636       0.687      0.7225
+    ## 5     0.0000       0.001      0.1192     0.0000       0.003      0.5651
     ##   p_hrd.5% p_hrd.50% p_hrd.95%
-    ## 1   0.0000     0.000    0.0090
+    ## 1   0.0000     0.000    0.0081
     ## 2   0.0000     0.000    0.0000
-    ## 3   0.2570     0.907    0.9363
-    ## 4   0.8758     0.887    0.8981
-    ## 5   0.0000     0.006    0.0367
+    ## 3   0.3215     0.784    0.9402
+    ## 4   0.7319     0.742    0.7922
+    ## 5   0.0000     0.008    0.6803
 
 To assess the stability of prediction for each sample, bootstrapping is
 performed by resampling the feature vector 20 times and calculating HRD
@@ -551,7 +562,7 @@ chord_output
 ```
 
     ##   sample p_BRCA1 p_BRCA2 p_hrd    hr_status   hrd_type remarks_hr_status
-    ## 1 PD3905   0.924   0.016  0.94 HR_deficient BRCA1_type                  
+    ## 1 PD3905   0.798   0.056 0.854 HR_deficient BRCA1_type                  
     ##   remarks_hrd_type
     ## 1
 

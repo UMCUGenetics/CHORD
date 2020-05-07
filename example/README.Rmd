@@ -8,6 +8,14 @@ homologous recombination deficiency (HRD). The primary contexts used by CHORD ar
 flanking microhomology and 1-100kb structural duplications. Additionally, 1-100kb structural
 duplications are used to distinguish BRCA1-type HRD from BRCA2-type HRD.
 
+# Changes
+CHORD has been updated to v2.0. In this version, the `del.mh` feature (deletions with microhomology)
+is split into `del.mh.bimh.1` and `del.mh.bimh.2.5` (bases in microhomology: 1bp; 2 to >=5bp). This
+was done to reduce false positive predictions. `del.mh.bimh.2.5` was found to be predictive of HRD
+to a greater extent than `del.mh.bimh.1`. Furthermore, radiation therapy was found to be associated
+with `del.mh.bimh.1`, which could result in false positive predictions for radiotherapy treated
+patients.
+
 # Reference
 **Pan-cancer landscape of homologous recombination deficiency**  
 *Luan Nguyen, John Martens, Arne Van Hoeck, Edwin Cuppen*  
@@ -103,8 +111,8 @@ contexts <- extractSigsChord(
 ```
 
 Often, SNVs and indels are reported in the same vcfs. In such cases, the vcf path can be specified to
-the ```vcf.snv``` argument (```vcf.indel``` can be left out). Alternatively, SNVs and indels can be
-provided as a dataframe, which can be specified to ```df.snv``` (with ```df.indel``` left out).
+the `vcf.snv` argument (`vcf.indel` can be left out). Alternatively, SNVs and indels can be
+provided as a dataframe, which can be specified to `df.snv` (with `df.indel` left out).
 ```{r eval=FALSE, error=FALSE}
 contexts <- extractSigsChord(
   vcf.snv = '/path/to/vcf/with/snvs_and_indels/', ## or: df.snv = bed_file_like_dataframe_with_snvs_and_indels
@@ -144,7 +152,7 @@ This tutorial will demonstrate how HRD prediction can be performed locally. For 
 many samples, it is advised to run CHORD on a high-performance cluster (HPC).
 
 Somatic vcfs from a few primary tumors from the 560 breast cancer cohort (BRCA-EU, ICGC) will be 
-used as example input. These are located at ```example/vcf/``` in the CHORD git repository. These 
+used as example input. These are located at `example/vcf/` in the CHORD git repository. These 
 vcfs have been generated from tsv files which are publically available at https://dcc.icgc.org/repositories.
 
 In part 1, we will use the vcfs directly as input for CHORD. 
@@ -159,7 +167,7 @@ setwd('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scr
 ```
 
 To run the example, clone/download the git repository to your own computer (e.g. to /Users/lnguyen/Desktop/), 
-and set the working directory to the ```example/``` directory in the CHORD package.
+and set the working directory to the `example/` directory in the CHORD package.
 ```{r eval=FALSE}
 setwd('/Users/lnguyen/Desktop/CHORD/example/')
 ```
@@ -190,7 +198,7 @@ Vcfs can either be in plain text format (.vcf) or compressed (.gz).
 SNVs and indels are often stored in the same vcf (as is the case with the example vcfs). CHORD
 therefore accepts such vcfs as input; SNVs and indels are automatically split up. However, it is
 also possible to specify the SNV and indel vcfs separately (by specifying the paths separately to
-```vcf.snv``` and ```vcf.indel``` to ```extractSigsChord()```; see below).
+`vcf.snv` and `vcf.indel` to `extractSigsChord()`; see below).
 
 ### Extracting mutation contexts
 Create a directory to write all subsequent output. **Note**: the output from this tutorial exists in 
@@ -222,9 +230,9 @@ for(i in 1:nrow(vcf_files)){
   }
 }
 ```
-The ```sv.caller``` parameter has been included in ```extractSigsChord()``` since different SV
-callers report SVs in different ways. ```extractSigsChord()``` includes parsing for vcfs produced by
-Manta and GRIDSS (```sv.caller='manta'``` or ```sv.caller='gridss'```). If you have vcfs from other
+The `sv.caller` parameter has been included in `extractSigsChord()` since different SV
+callers report SVs in different ways. `extractSigsChord()` includes parsing for vcfs produced by
+Manta and GRIDSS (`sv.caller='manta'`or `sv.caller='gridss'`). If you have vcfs from other
 SV callers, a solution is to provide the relevant data as a dataframe (see section 2 of the 
 tutorial).
 
@@ -265,28 +273,28 @@ chord_output[,1:8]
 
 CHORD outputs the probability of:
 
-* HRD: ```p_hrd```
-* BRCA1-type HRD: ```p_BRCA1```
-* BRCA2-type HRD: ```p_BRCA2```
+* HRD: `p_hrd`
+* BRCA1-type HRD: `p_BRCA1`
+* BRCA2-type HRD: `p_BRCA2`
 
-```hr_status``` tells us if a sample is HR deficient (```p_hrd``` >= 0.5) 
-or proficient. If a sample is HRD, then ```hrd_type``` will tell us if the sample has BRCA1-type HRD 
-or BRCA2-type HRD (=max(```p_BRCA1```,```p_BRCA2```)).
+`hr_status` tells us if a sample is HR deficient (`p_hrd` >= 0.5) 
+or proficient. If a sample is HRD, then `hrd_type` will tell us if the sample has BRCA1-type HRD 
+or BRCA2-type HRD (=max(`p_BRCA1`,`p_BRCA2`)).
 
 #### Pre-requisites for accurate HRD prediction
 CHORD requires **>=50 indels** to accurately determine whether a sample is HRD. If this criterion is not
-met, ```hr_status``` will be ```cannot_be_determined``` and ```remarks_hr_status``` will be 
-```<50 indels```. 
+met, `hr_status` will be `cannot_be_determined` and `remarks_hr_status` will be 
+`<50 indels`. 
 
-CHORD **cannot be applied to MSI samples**. If an MSI sample is detected, ```hr_status``` will be 
-```cannot_be_determined``` and ```remarks_hr_status``` will be ```Has MSI (>14000 indel.rep)```
+CHORD **cannot be applied to MSI samples**. If an MSI sample is detected, `hr_status` will be 
+`cannot_be_determined` and `remarks_hr_status` will be `Has MSI (>14000 indel.rep)`
 
 If a sample is HRD, CHORD requires **>=30 SVs** to accurately determine HRD subtype. If this criterion is not
-met, ```hrd_type``` will be ```cannot_be_determined```, and ```remarks_hr_status``` will be 
-```<30 SVs```.
+met, `hrd_type` will be `cannot_be_determined`, and `remarks_hr_status` will be 
+`<30 SVs`.
 
 The user may of course ignore these remarks and proceed with using the raw probabilities 
-outputted by CHORD (```p_hrd``` and/or ```p_BRCA1```/```pBRCA2```).
+outputted by CHORD (`p_hrd` and/or `p_BRCA1`/`pBRCA2`).
 
 #### Stability of predictions
 To extract the bootstrap predictions:
@@ -301,15 +309,15 @@ a lower (5% quantile) and upper (95% quantile) error from the median probability
 each prediction class.
 
 The user may choose to use the median probabilities in place of the single probabilities (as in
-```chord_output$pred```). This can give more accurate HRD probabilities, especially for samples 
+`chord_output$pred`). This can give more accurate HRD probabilities, especially for samples 
 with low mutational load.
 
 Note that performing the bootstrapping is computationally expensive. Bootstrapping can be turned off
-by specifying ```do.bootstrap=F``` to ```chordPredict()```.
+by specifying `do.bootstrap=F` to `chordPredict()`.
 
 ## 2. Running CHORD from dataframes
 To run CHORD on non-standard vcfs or from other sources, we can create dataframes that 
-```extractSigsChord()``` accepts. The output can then be passed to ```chordPredict()```.
+`extractSigsChord()` accepts. The output can then be passed to `chordPredict()`.
 
 In this part of the tutorial, we will create the required dataframes from the example vcfs. This
 will thus also serve as a short demonstration on how one could parse vcfs in R. Furthermore, we will 
@@ -320,7 +328,7 @@ For SNVs and indels, a dataframe containing CHROM, POS, REF and ALT information 
 format) is required. The column names of this dataframe can be anything; as long as the columns are 
 in the aforementioned order. 
 
-We can use ```readVcfFields()``` from the ```mutSigExtractor``` package to read a vcf into R as a 
+We can use `readVcfFields()` from the `mutSigExtractor` package to read a vcf into R as a 
 dataframe.
 
 ```{r message=FALSE, warning=FALSE}
@@ -349,7 +357,7 @@ For SVs, a dataframe is required with SV type (values must be one of the followi
 DUP, INV, TRA) and SV length information. Again, the column names of this dataframe can be anything;
 as long as the columns are in the aforementioned order.
 
-Again, ```readVcfFields()``` can be used to read the vcf. The example vcfs have been produced by 
+Again, `readVcfFields()` can be used to read the vcf. The example vcfs have been produced by 
 Manta, which reports SVTYPE and SVLEN in the INFO field, so only this field needs to be extracted 
 from the vcf.
 
