@@ -7,6 +7,8 @@
 #' @param rf.model The random forest model. Defaults to CHORD.
 #' @param hrd.cutoff Default=0.5. Samples greater or equal to this cutoff will be marked as HRD 
 #' (is_hrd==TRUE).
+#' @param trans.func Function used to transform raw features. Raw features should be in the format:
+#' list(snv=matrix(), indel=matrix(), sv=matrix())
 #' @param min.indel.load Default=50. The minimum number of indels required to make an accurate HRD
 #' prediction. Samples with fewer indels than this value will be marked as is_hrd==NA (HR status 
 #' could not be confidently determined).
@@ -42,7 +44,7 @@
 
 chordPredict <- function(
   features, rf.model=CHORD, hrd.cutoff=0.5, 
-  custom.trans.func=NULL,
+  trans.func=NULL,
   
   ## QC thresholds
   min.indel.load=50, min.sv.load=30, min.msi.indel.rep=14000,
@@ -57,7 +59,7 @@ chordPredict <- function(
   # features=read.delim('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/output/merged_contexts.txt', check.names=F)
   # features=readRDS('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/HMF_DR010_DR047/matrices/merged_contexts.rds')
   # features=do.call(cbind, unname(features))
-  # features=features[200:300,]
+  # features=features[1:20,]
   
   if(verbose){ message('Preprocessing features...') }
   ## Converts the raw signature counts from extractSigsChord() to features used by CHORD
@@ -68,22 +70,44 @@ chordPredict <- function(
   }
   #features_split <- features_split[c('snv','indel','sv')] ## Remove other mut types if they exist
   
-  if(is.null(custom.trans.func)){
-    features_processed <- mutSigExtractor::transformContexts(
-      features_split,
+  ## Default feature transformation function
+  if(is.null(trans.func)){
+    
+    trans.func <- function(features_split){
+      ## Merge del mh bimh 2-5
+      indels <- features_split$indel
+      indel_types <- c('del.rep','ins.rep','del.mh','ins.mh','del.none','ins.none')
+      indels_split <- mutSigExtractor::splitDfRegex(indels, indel_types)
+      names(indels_split) <- indel_types
       
-      ## Simplify indels to types only (mh: flanking microhomology, rep: within repeat regions, none: 
-      ## other indels) by ignoring indel length.
+      counter <- 0
+      indels_custom <- lapply(indels_split, function(i){
+        counter <<- counter + 1
+        df <- as.data.frame(rowSums(i))
+        colnames(df) <- indel_types[counter]
+        return(df)
+      })
+      
+      indels_custom$del.mh <- with(indels_split,{
+        cbind(
+          del.mh['del.mh.bimh.1'],
+          'del.mh.bimh.2.5'=rowSums(del.mh[!(colnames(del.mh) %in% 'del.mh.bimh.1')])
+        )
+      })
+      
+      ## Add new indels back to list
+      l <- features_split[c('snv','indel','sv')]
+      l$indel <- do.call(cbind, unname(indels_custom))
+      
       ## Simplify SNVs to the 6 types of base substitions (C>A, C>G, C>T, T>A, T>C, T>G) by ignoring
       ## the immediate flanking nucleotides
-      simplify.types = c('snv','indel'),
-      
       ## Convert absolute counts to relative counts. Calculated per variant type.
-      rel.types = c('snv','indel','sv')
-    )
-  } else {
-    features_processed <- custom.trans.func(features_split)
+      m <- mutSigExtractor::transformContexts(l, simplify.types='snv', rel.types='all')
+      return(m)
+    }
   }
+  
+  features_processed <- trans.func(features_split)
   
   #--------- Prediction ---------#
   if(verbose){ message('Calculating HRD probabilities...') }
@@ -159,11 +183,7 @@ chordPredict <- function(
       )
       
       ## Transform features
-      m <- mutSigExtractor::transformContexts(
-        l,
-        simplify.types = c('snv','indel'),
-        rel.types = c('snv','indel','sv')
-      )
+      m <- trans.func(l)
       
       ## Predict
       pred <- doPredict(m)
