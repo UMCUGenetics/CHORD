@@ -23,7 +23,7 @@ radiotherapy treated patients.
 
 **Pan-cancer landscape of homologous recombination deficiency**  
 *Luan Nguyen, John Martens, Arne Van Hoeck, Edwin Cuppen*  
-<https://www.biorxiv.org/content/10.1101/2020.01.13.905026v1>
+<https://www.biorxiv.org/content/10.1101/2020.01.13.905026v2.full>
 
 For now, please refer to the paper on bioRxiv. Once the paper is
 published, this link will be updated.
