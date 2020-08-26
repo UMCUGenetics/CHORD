@@ -19,7 +19,7 @@ patients.
 # Reference
 **Pan-cancer landscape of homologous recombination deficiency**  
 *Luan Nguyen, John Martens, Arne Van Hoeck, Edwin Cuppen*  
-https://www.biorxiv.org/content/10.1101/2020.01.13.905026v1
+https://www.biorxiv.org/content/10.1101/2020.01.13.905026v2
 
 For now, please refer to the paper on bioRxiv. Once the paper is published, this link will be 
 updated.
@@ -101,12 +101,16 @@ The column names themselves do not matter, as long as the columns are in the afo
 ## Inputs are flexible
 The vcf.* and df.* arguments can be mixed. This is especially useful in the case of SV vcfs, since
 it is possible that you will need to parse these yourself (in this case the ```sv.caller``` 
-argument can be left out).
+argument can be left out). Make sure to only use PASS variants! If your vcf contain unfiltered 
+variants, you can provide the desired FILTER values to keep to `vcf.filters`.
 ```{r eval=FALSE, error=FALSE}
 contexts <- extractSigsChord(
   vcf.snv = '/path/to/vcf/with/snvs/',
   vcf.indel = '/path/to/vcf/with/indels/',
-  df.sv = dataframe_with_svtype_and_svlen
+  df.sv = dataframe_with_svtype_and_svlen,
+  
+  ## This is optional (for when your vcfs are not filtered for PASS variants)
+  vcf.filters=list(snv="PASS",indel="PASS",sv="PASS") 
 )
 ```
 
@@ -163,7 +167,7 @@ case with SV vcfs. Of course, it is possible to produce the required input dataf
 any data source, and not just vcfs; it only requires a bit of data wrangling :).
 
 ```{r message=FALSE, warning=FALSE, results="hide", echo=FALSE}
-setwd('/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/')
+setwd('/Users/lnguyen/hpc/cuppen/projects/P0013_WGS_patterns_Diagn/CHORD/processed/scripts_main/CHORD/example/')
 ```
 
 To run the example, clone/download the git repository to your own computer (e.g. to /Users/lnguyen/Desktop/), 
