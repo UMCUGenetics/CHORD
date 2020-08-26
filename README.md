@@ -23,7 +23,7 @@ radiotherapy treated patients.
 
 **Pan-cancer landscape of homologous recombination deficiency**  
 *Luan Nguyen, John Martens, Arne Van Hoeck, Edwin Cuppen*  
-<https://www.biorxiv.org/content/10.1101/2020.01.13.905026v2.full>
+<https://www.biorxiv.org/content/10.1101/2020.01.13.905026v2>
 
 For now, please refer to the paper on bioRxiv. Once the paper is
 published, this link will be updated.
@@ -113,12 +113,18 @@ the aforementioned order.
 The vcf.\* and df.\* arguments can be mixed. This is especially useful
 in the case of SV vcfs, since it is possible that you will need to parse
 these yourself (in this case the `sv.caller` argument can be left out).
+Make sure to only use PASS variants\! If your vcf contain unfiltered
+variants, you can provide the desired FILTER values to keep to
+`vcf.filters`.
 
 ``` r
 contexts <- extractSigsChord(
   vcf.snv = '/path/to/vcf/with/snvs/',
   vcf.indel = '/path/to/vcf/with/indels/',
-  df.sv = dataframe_with_svtype_and_svlen
+  df.sv = dataframe_with_svtype_and_svlen,
+  
+  ## This is optional (for when your vcfs are not filtered for PASS variants)
+  vcf.filters=list(snv="PASS",indel="PASS",sv="PASS") 
 )
 ```
 
@@ -138,9 +144,11 @@ contexts <- extractSigsChord(
 A different reference genome than the default
 (BSgenome.Hsapiens.UCSC.hg19) can be used. Genomes should be BSgenomes.
 The **variable name** (i.e. no quotes) of the BSgenome object is
-specified to `ref.genome`.
+specified to
 
-``` r
+~~~~ ref.genome```.
+
+```r
 ## Make sure to install and load the desired ref genome first
 install.packages('BiocManager')
 BiocManager::install('BSgenome.Hsapiens.UCSC.hg38')
@@ -155,7 +163,7 @@ contexts <- extractSigsChord(
   df.sv = dataframe_with_svtype_and_svlen
   ref.genome=BSgenome.Hsapiens.UCSC.hg38
 )
-```
+~~~~
 
 ## Predicting HRD
 
@@ -365,25 +373,24 @@ raw probabilities outputted by CHORD (`p_hrd` and/or
 
 #### Stability of predictions
 
-To extract the bootstrap
-    predictions:
+To extract the bootstrap predictions:
 
 ``` r
 chord_output[,9:ncol(chord_output)]
 ```
 
     ##   p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50% p_BRCA2.95%
-    ## 1     0.0000       0.000      0.0043     0.0000       0.000      0.0021
-    ## 2     0.0000       0.000      0.0000     0.0000       0.000      0.0000
-    ## 3     0.3104       0.665      0.9226     0.0100       0.044      0.1597
-    ## 4     0.0419       0.059      0.0849     0.6636       0.687      0.7225
-    ## 5     0.0000       0.001      0.1192     0.0000       0.003      0.5651
+    ## 1      0.000       0.000      0.0041     0.0000       0.000      0.0021
+    ## 2      0.000       0.000      0.0000     0.0000       0.000      0.0000
+    ## 3      0.311       0.601      0.8787     0.0119       0.057      0.1612
+    ## 4      0.044       0.065      0.0872     0.6529       0.687      0.7361
+    ## 5      0.000       0.000      0.1344     0.0000       0.000      0.2375
     ##   p_hrd.5% p_hrd.50% p_hrd.95%
-    ## 1   0.0000     0.000    0.0081
+    ## 1   0.0000     0.000    0.0061
     ## 2   0.0000     0.000    0.0000
-    ## 3   0.3215     0.784    0.9402
-    ## 4   0.7319     0.742    0.7922
-    ## 5   0.0000     0.008    0.6803
+    ## 3   0.3566     0.736    0.9191
+    ## 4   0.7378     0.746    0.8030
+    ## 5   0.0000     0.000    0.3123
 
 To assess the stability of prediction for each sample, bootstrapping is
 performed by resampling the feature vector 20 times and calculating HRD
@@ -420,8 +427,7 @@ of this dataframe can be anything; as long as the columns are in the
 aforementioned order.
 
 We can use `readVcfFields()` from the `mutSigExtractor` package to read
-a vcf into R as a
-dataframe.
+a vcf into R as a dataframe.
 
 ``` r
 library(mutSigExtractor)
@@ -431,8 +437,7 @@ library(mutSigExtractor)
 df_snv_indel <- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c('CHROM','POS','REF','ALT'))
 ```
 
-Alternatively, we can specify the vcf columns we want by
-index.
+Alternatively, we can specify the vcf columns we want by index.
 
 ``` r
 df_snv_indel <- readVcfFields('vcf/PD3905_snv_indel.vcf.gz', fields=c(1,2,4,5))
@@ -538,8 +543,7 @@ contexts <- extractSigsChord(
 )
 ```
 
-Below we can see what a part of the context matrix looks
-    like.
+Below we can see what a part of the context matrix looks like.
 
 ``` r
 contexts[,c(1:4, 97:104, 127:131),drop=F]
