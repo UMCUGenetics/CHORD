@@ -101,7 +101,7 @@ The column names themselves do not matter, as long as the columns are in the afo
 ## Inputs are flexible
 The vcf.* and df.* arguments can be mixed. This is especially useful in the case of SV vcfs, since
 it is possible that you will need to parse these yourself (in this case the ```sv.caller``` 
-argument can be left out). Make sure to only use PASS variants! If your vcf contain unfiltered 
+argument can be left out). Make sure to only use PASS variants! If your vcfs contain unfiltered 
 variants, you can provide the desired FILTER values to keep to `vcf.filters`.
 ```{r eval=FALSE, error=FALSE}
 contexts <- extractSigsChord(

@@ -113,7 +113,7 @@ the aforementioned order.
 The vcf.\* and df.\* arguments can be mixed. This is especially useful
 in the case of SV vcfs, since it is possible that you will need to parse
 these yourself (in this case the `sv.caller` argument can be left out).
-Make sure to only use PASS variants\! If your vcf contain unfiltered
+Make sure to only use PASS variants\! If your vcfs contain unfiltered
 variants, you can provide the desired FILTER values to keep to
 `vcf.filters`.
 
@@ -380,17 +380,17 @@ chord_output[,9:ncol(chord_output)]
 ```
 
     ##   p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50% p_BRCA2.95%
-    ## 1      0.000       0.000      0.0041     0.0000       0.000      0.0021
-    ## 2      0.000       0.000      0.0000     0.0000       0.000      0.0000
-    ## 3      0.311       0.601      0.8787     0.0119       0.057      0.1612
-    ## 4      0.044       0.065      0.0872     0.6529       0.687      0.7361
-    ## 5      0.000       0.000      0.1344     0.0000       0.000      0.2375
+    ## 1     0.0000       0.000      0.0020     0.0000       0.000      0.0040
+    ## 2     0.0000       0.000      0.0000     0.0000       0.000      0.0000
+    ## 3     0.3097       0.640      0.8828     0.0040       0.070      0.1660
+    ## 4     0.0459       0.064      0.1282     0.6346       0.677      0.6991
+    ## 5     0.0000       0.000      0.1616     0.0000       0.003      0.4604
     ##   p_hrd.5% p_hrd.50% p_hrd.95%
-    ## 1   0.0000     0.000    0.0061
+    ## 1   0.0000     0.002    0.0041
     ## 2   0.0000     0.000    0.0000
-    ## 3   0.3566     0.736    0.9191
-    ## 4   0.7378     0.746    0.8030
-    ## 5   0.0000     0.000    0.3123
+    ## 3   0.3460     0.763    0.9110
+    ## 4   0.7339     0.739    0.7670
+    ## 5   0.0000     0.005    0.6487
 
 To assess the stability of prediction for each sample, bootstrapping is
 performed by resampling the feature vector 20 times and calculating HRD
