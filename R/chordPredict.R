@@ -112,7 +112,10 @@ chordPredict <- function(
   #--------- Prediction ---------#
   if(verbose){ message('Calculating HRD probabilities...') }
   doPredict <- function(m){
-    df <- as.data.frame(randomForest:::predict.randomForest(rf.model, m, type='prob'))
+    df <- as.data.frame(
+      randomForest:::predict.randomForest(rf.model, m, type='prob'),
+      stringsAsFactors=F
+    )
     df <- df[,c('none','BRCA1','BRCA2')]
     colnames(df) <- paste0('p_',colnames(df))
     df$p_hrd <- df$p_BRCA1 + df$p_BRCA2
