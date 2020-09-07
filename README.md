@@ -144,11 +144,9 @@ contexts <- extractSigsChord(
 A different reference genome than the default
 (BSgenome.Hsapiens.UCSC.hg19) can be used. Genomes should be BSgenomes.
 The **variable name** (i.e. no quotes) of the BSgenome object is
-specified to
+specified to `ref.genome`.
 
-~~~~ ref.genome```.
-
-```r
+``` r
 ## Make sure to install and load the desired ref genome first
 install.packages('BiocManager')
 BiocManager::install('BSgenome.Hsapiens.UCSC.hg38')
@@ -163,7 +161,7 @@ contexts <- extractSigsChord(
   df.sv = dataframe_with_svtype_and_svlen
   ref.genome=BSgenome.Hsapiens.UCSC.hg38
 )
-~~~~
+```
 
 ## Predicting HRD
 
@@ -380,17 +378,17 @@ chord_output[,9:ncol(chord_output)]
 ```
 
     ##   p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50% p_BRCA2.95%
-    ## 1     0.0000       0.000      0.0020     0.0000       0.000      0.0040
+    ## 1     0.0000       0.000      0.0020     0.0000       0.000      0.0020
     ## 2     0.0000       0.000      0.0000     0.0000       0.000      0.0000
-    ## 3     0.3097       0.640      0.8828     0.0040       0.070      0.1660
-    ## 4     0.0459       0.064      0.1282     0.6346       0.677      0.6991
-    ## 5     0.0000       0.000      0.1616     0.0000       0.003      0.4604
+    ## 3     0.5492       0.651      0.8687     0.0212       0.139      0.2103
+    ## 4     0.0556       0.063      0.0820     0.6540       0.685      0.7423
+    ## 5     0.0000       0.000      0.1604     0.0000       0.000      0.5125
     ##   p_hrd.5% p_hrd.50% p_hrd.95%
-    ## 1   0.0000     0.002    0.0041
+    ## 1   0.0000     0.000    0.0040
     ## 2   0.0000     0.000    0.0000
-    ## 3   0.3460     0.763    0.9110
-    ## 4   0.7339     0.739    0.7670
-    ## 5   0.0000     0.005    0.6487
+    ## 3   0.6541     0.791    0.9149
+    ## 4   0.7340     0.746    0.8034
+    ## 5   0.0000     0.001    0.6521
 
 To assess the stability of prediction for each sample, bootstrapping is
 performed by resampling the feature vector 20 times and calculating HRD

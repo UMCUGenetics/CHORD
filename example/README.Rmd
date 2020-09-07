@@ -126,7 +126,8 @@ contexts <- extractSigsChord(
 
 A different reference genome than the default (BSgenome.Hsapiens.UCSC.hg19) can be used. Genomes 
 should be BSgenomes. The **variable name** (i.e. no quotes) of the BSgenome object is specified to
-```ref.genome```.
+`ref.genome`.
+
 ```{r eval=FALSE, error=FALSE}
 ## Make sure to install and load the desired ref genome first
 install.packages('BiocManager')
