@@ -59,7 +59,7 @@ contexts$BRCA_EU <- readRDS(paste0(base_dir,'/CHORD/processed/ICGC/matrices/BRCA
 contexts$BRCA_EU.HMF_pipeline <- readRDS(paste0(base_dir,'/CHORD/processed/BRCA_EU/matrices/BRCA_EU_hmfPipeline_2/merged_contexts.rds'))
 
 ## PCAWG
-contexts$PCAWG <- readRDS(paste0(base_dir,'/datasets/processed/PCAWG_2020/matrices/contexts_merged.rds'))
+contexts$PCAWG <- readRDS(paste0(base_dir,'/datasets/processed/PCAWG_2020/matrices/contexts/contexts_merged.rds'))
 
 
 ####################################################################################################
@@ -529,8 +529,9 @@ main <- function(rf, hmf.data.only=F, export.preds.only=F){
       if(show.confusion>=1){
          
          m_confusion <- confusionMatrix(
-            df_full$sum, 
-            toBinaryResponse(df_full$response,c('BRCA1','BRCA2'),1,'none',0),
+            predicted=df_full$sum, 
+            #actual=toBinaryResponse(df_full$response,c('BRCA1','BRCA2'),1,'none',0),
+            actual=df_full$response %in% c('BRCA1','BRCA2'),
             cutoff=cutoff.hline.y
          )
          m_confusion <- rbind(
@@ -826,13 +827,13 @@ main <- function(rf, hmf.data.only=F, export.preds.only=F){
       confusion <- confusionMatrix(
          df[c('BRCA1','BRCA2','none')],
          oneHotEncode(as.factor(df$response)),
-         cutoff.interval=NULL
+         cutoff.interval=0.002
       )
 
       confusion$hrd <- confusionMatrix( 
          df$hrd, 
          ifelse(df$response=='none',FALSE,TRUE),
-         cutoff.interval=NULL
+         cutoff.interval=0.002
       )
       
       confusion <- confusion[c('hrd','BRCA1','BRCA2')]
@@ -905,11 +906,11 @@ main <- function(rf, hmf.data.only=F, export.preds.only=F){
    ){
       # confusion=confusions$HMF_CV
       # metrics=c('tpr','fpr')
-      # metrics='f1'
+      # metrics='prec'
       
       l <- lapply(names(confusion), function(i){
          #i='BRCA1-like HRD'
-         df <- calcPerf(confusion[[i]], metrics=metrics, melt=T)
+         df <- calcPerf(confusion[[i]], metrics=metrics, melt=T, add.start.end.values=F)
          if(na.rough.fix){ df[is.na(df)] <- 0 }
          df <- unique(df)
          df$class <- i
