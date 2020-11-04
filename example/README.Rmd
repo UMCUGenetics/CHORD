@@ -18,11 +18,9 @@ patients.
 
 # Reference
 **Pan-cancer landscape of homologous recombination deficiency**  
-*Luan Nguyen, John Martens, Arne Van Hoeck, Edwin Cuppen*  
-https://www.biorxiv.org/content/10.1101/2020.01.13.905026v2
+*Luan Nguyen, John Martens, Arne Van Hoeck, Edwin Cuppen. Nat Commun 11, 5584 (2020).*
+https://www.nature.com/articles/s41467-020-19406-4
 
-For now, please refer to the paper on bioRxiv. Once the paper is published, this link will be 
-updated.
 
 # Installation
 CHORD is itself an R package. Before using CHORD, some other R packages will also need to be 
