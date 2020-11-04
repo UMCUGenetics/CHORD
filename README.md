@@ -22,11 +22,8 @@ radiotherapy treated patients.
 # Reference
 
 **Pan-cancer landscape of homologous recombination deficiency**  
-*Luan Nguyen, John Martens, Arne Van Hoeck, Edwin Cuppen*  
-<https://www.biorxiv.org/content/10.1101/2020.01.13.905026v2>
-
-For now, please refer to the paper on bioRxiv. Once the paper is
-published, this link will be updated.
+*Luan Nguyen, John Martens, Arne Van Hoeck, Edwin Cuppen. Nat Commun 11,
+5584 (2020).* <https://www.nature.com/articles/s41467-020-19406-4>
 
 # Installation
 
@@ -378,17 +375,17 @@ chord_output[,9:ncol(chord_output)]
 ```
 
     ##   p_BRCA1.5% p_BRCA1.50% p_BRCA1.95% p_BRCA2.5% p_BRCA2.50% p_BRCA2.95%
-    ## 1     0.0000       0.000      0.0020     0.0000       0.000      0.0020
+    ## 1     0.0000       0.000      0.0043     0.0000       0.000      0.0040
     ## 2     0.0000       0.000      0.0000     0.0000       0.000      0.0000
-    ## 3     0.5492       0.651      0.8687     0.0212       0.139      0.2103
-    ## 4     0.0556       0.063      0.0820     0.6540       0.685      0.7423
-    ## 5     0.0000       0.000      0.1604     0.0000       0.000      0.5125
+    ## 3     0.4983       0.638      0.8644     0.0156       0.079      0.1704
+    ## 4     0.0477       0.069      0.1046     0.6393       0.675      0.7403
+    ## 5     0.0000       0.000      0.1810     0.0000       0.002      0.4714
     ##   p_hrd.5% p_hrd.50% p_hrd.95%
-    ## 1   0.0000     0.000    0.0040
+    ## 1   0.0000     0.000    0.0062
     ## 2   0.0000     0.000    0.0000
-    ## 3   0.6541     0.791    0.9149
-    ## 4   0.7340     0.746    0.8034
-    ## 5   0.0000     0.001    0.6521
+    ## 3   0.5960     0.785    0.8947
+    ## 4   0.7276     0.742    0.8058
+    ## 5   0.0000     0.003    0.6444
 
 To assess the stability of prediction for each sample, bootstrapping is
 performed by resampling the feature vector 20 times and calculating HRD
