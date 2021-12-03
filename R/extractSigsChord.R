@@ -44,7 +44,7 @@ extractSigsChord <- function(
     stop('Either vcf.indel or df.indel inputs are required')
   }
   
-  if(is.null(vcf.snv) & is.null(df.snv)){
+  if(is.null(vcf.sv) & is.null(df.sv)){
     stop('Either vcf.sv or df.sv inputs are required')
   }
   
