@@ -58,7 +58,6 @@ extractSigsChord <- function(
     variants$snv <- mutSigExtractor::variantsFromVcf(
       vcf.snv,
       vcf.filter=vcf.filters$snv,
-      ref.genome=ref.genome,
       verbose=verbose
     )
   } else {
@@ -74,7 +73,6 @@ extractSigsChord <- function(
       variants$indel <- mutSigExtractor::variantsFromVcf(
         vcf.indel,
         vcf.filter=vcf.filters$indel, 
-        ref.genome=ref.genome,
         verbose=verbose
       )
     }
@@ -89,7 +87,7 @@ extractSigsChord <- function(
   
   if(verbose){ message('\n## SVs') }
   if(!is.null(vcf.sv)){
-    variants$sv <- mutSigExtractor::variantsFromVcf(vcf.sv, vcf.filter=vcf.filters$sv, vcf.fields=c('CHROM','POS','REF','ALT','FILTER','ID','INFO'))
+    variants$sv <- mutSigExtractor::variantsFromVcf(vcf.sv, vcf.filter=vcf.filters$sv, vcf.fields=c('CHROM','POS','REF','ALT','FILTER','ID','INFO'), verbose=verbose)
     variants$sv <- mutSigExtractor::getContextsSv(variants$sv, sv.caller=sv.caller)
   } else {
     variants$sv <- df.sv
@@ -103,7 +101,7 @@ extractSigsChord <- function(
   sigs$snv <- mutSigExtractor::extractSigsSnv(df=variants$snv, output='contexts', ref.genome=ref.genome, verbose=verbose)
   
   if(verbose){ message('\n## Indel contexts (types x lengths)') }
-  sigs$indel <- mutSigExtractor::extractSigsIndel(df=variants$indel, ref.genome=ref.genome, verbose=verbose)
+  sigs$indel <- mutSigExtractor::extractSigsIndel(df=variants$indel, method='chord', ref.genome=ref.genome, verbose=verbose)
   
   if(verbose){ message('\n## SV contexts (types x lengths)') }
   sigs$sv <- mutSigExtractor::extractSigsSv(
