@@ -30,7 +30,7 @@ extractSigsChord <- function(
   df.snv=NULL, df.indel=df.snv, df.sv=NULL,
   sample.name='sample',
   vcf.filters=list(snv=NA,indel=NA,sv=NA),
-  sv.caller='gridss', output.path=NULL, ref.genome=mutSigExtractor::DEFAULT_GENOME, verbose=F
+  sv.caller='gridss', output.path=NULL, ref.genome=mutSigExtractor:::DEFAULT_GENOME, verbose=F
 ){
   
   #vcf.snv='/Users/lnguyen/hpc/cog_bioinf/cuppen/project_data/Luan_projects/CHORD/scripts_main/CHORD/example/vcf/PD4116_snv_indel.vcf.gz'
