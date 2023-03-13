@@ -47,7 +47,7 @@ chordPredict <- function(
   trans.func=NULL,
   
   ## QC thresholds
-  min.indel.load=50, min.sv.load=30, min.msi.indel.rep=14000,
+  min.indel.load=100, min.sv.load=30, min.msi.indel.rep=14000,
   
   ## Confidence interval estimation
   do.bootstrap=F, bootstrap.iters=20, bootstrap.quantiles=c(0.05, 0.5, 0.95),
