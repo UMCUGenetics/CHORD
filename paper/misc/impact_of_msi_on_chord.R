@@ -227,10 +227,6 @@ subset(ann_msi_samples, response!='none')
 m <- do.call(cbind, unname(contexts$abs))
 m <- m[ann_msi_samples$sample,c('del.rep','ins.rep','del.mh','ins.mh','del.none','ins.none')]
 
-# m[c('CPCT02020514T','CPCT02020680T','CPCT02070023TII','CPCT02130146T'),]
-# 
-# center
-
 pca <- prcomp(m, center=T, scale=T)
 
 df <- as.data.frame(pca$x)
