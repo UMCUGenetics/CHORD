@@ -128,9 +128,7 @@ getDiplotypesWithNovelVus <- function(l_m_diplotypes, rank_order_clust, diplotyp
    
    diplotypes_ss$cluster <- sample_clusters[ match(diplotypes_ss$sample,names(sample_clusters)) ]
    diplotypes_ss <- diplotypes_ss[diplotypes_ss$cluster==diplotypes_ss$hgnc_symbol,]
-   
-   #subset(diplotypes,sample=='XXXXXXXX')
-   
+      
    return(diplotypes_ss)
 }
 

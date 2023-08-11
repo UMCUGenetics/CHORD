@@ -541,16 +541,13 @@ main(
     hrd_type <- apply(roclust$df_ranked[,chord_classes],1, function(i){
       chord_classes[as.logical(i)]
     })
-    
-    #roclust$df_ranked['XXXXXXXX',]
-    #roclust$clusters['XXXXXXXX']
+
     #View(roclust$df_ranked)
     
     hrd_type <- gsub('p_','',hrd_type)
     modif_samples <- c()
     for(sample in names(hrd_type)){
-      #sample='XXXXXXXX'
-      #sample='XXXXXXXX'
+ 
       hrd_gene_group <- hrd_groups[[ hrd_type[[sample]] ]]
       
       sel_cols <- !( colnames(roclust$df_ranked) %in% c(hrd_gene_group, chord_classes) )

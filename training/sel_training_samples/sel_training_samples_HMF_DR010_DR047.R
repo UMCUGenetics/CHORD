@@ -25,8 +25,8 @@ contexts <- readRDS(paste0(base_dir,'/datasets/HMF_DR010_DR047/matrices/contexts
 
 
 #========= Identify samples with MSI =========#
-## Based on the MYSQL MSI query, the sample with MSI with the lowest contrib of indel.rep was
-## XXXXXXXX (indel.rep==14087). Furthermore, all samples above this value had MSI
+## Based on the MYSQL MSI query, the sample with MSI with the lowest contrib of indel.rep had
+## indel.rep==14087. Furthermore, all samples above this value had MSI
 ## (100% TP rate). MSI was validated at HMF using a PCR based method (?).
 indel_load <- transformContexts(indel=contexts$indel, simplify.types='indel')
 indel_rep_load <- rowSums(indel_load[,c('ins.rep','del.rep')])
