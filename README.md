@@ -1,23 +1,19 @@
 CHORD: Classifier of HOmologous Recombination Deficiency
 ================
 
+> [!NOTE]
+> This repo is no longer actively maintained. Both 
+> [CHORD](https://github.com/UMCUGenetics/CHORD) and
+> [mutSigExtractor](https://github.com/UMCUGenetics/mutSigExtractor) 
+> have been migrated to 
+> [hmftools/chord](https://github.com/hartwigmedical/hmftools/tree/master/chord).
+
 CHORD is a random forest model that uses the relative counts of somatic
 mutation contexts to predict homologous recombination deficiency (HRD).
 The primary contexts used by CHORD are deletions with flanking
 microhomology and 1-100kb structural duplications. Additionally, 1-100kb
 structural duplications are used to distinguish BRCA1-type HRD from
 BRCA2-type HRD.
-
-# Changes
-
-CHORD has been updated to v2.0. In this version, the `del.mh` feature
-(deletions with microhomology) is split into `del.mh.bimh.1` and
-`del.mh.bimh.2.5` (bases in microhomology: 1bp; 2 to \>=5bp). This was
-done to reduce false positive predictions. `del.mh.bimh.2.5` was found
-to be predictive of HRD to a greater extent than `del.mh.bimh.1`.
-Furthermore, radiation therapy was found to be associated with
-`del.mh.bimh.1`, which could result in false positive predictions for
-radiotherapy treated patients.
 
 # Reference
 
