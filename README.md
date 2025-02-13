@@ -2,11 +2,11 @@ CHORD: Classifier of HOmologous Recombination Deficiency
 ================
 
 > [!NOTE]
-> This repo is no longer actively maintained. Both 
+> **This repo is no longer actively maintained. Both 
 > [CHORD](https://github.com/UMCUGenetics/CHORD) and
 > [mutSigExtractor](https://github.com/UMCUGenetics/mutSigExtractor) 
 > have been migrated to 
-> [hmftools/chord](https://github.com/hartwigmedical/hmftools/tree/master/chord).
+> [hmftools/chord](https://github.com/hartwigmedical/hmftools/tree/master/chord).**
 
 CHORD is a random forest model that uses the relative counts of somatic
 mutation contexts to predict homologous recombination deficiency (HRD).
